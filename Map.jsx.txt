@@ -1,0 +1,735 @@
+ Last Modified 2025-09-13T103802.201Z
+import ReactDOM from 'react-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import Box from '@muimaterialBox';
+import TextField from '@muimaterialTextField';
+import MenuItem from '@muimaterialMenuItem';
+import Button from '@muimaterialButton';
+import Grid from '@muimaterialGrid';
+import Dialog from '@muimaterialDialog';
+import { AgGridReact } from 'ag-grid-react';
+import ag-grid-communitystylesag-grid.css;
+import ag-grid-communitystylesag-theme-alpine.css;
+
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  Checkbox,
+  ListItemText,
+  OutlinedInput,  For a more visually distinct input
+} from '@muimaterial';
+
+    
+const MyApp = () = {
+  const [isValidShippmentId, setValidShippmentId] = useState({ 'validated' false, 'error' false });
+  const [isValidOrganization, setValidOrganization] = useState({ 'validated' false, 'error' false });
+  const [isValidRiskScore, setValidRiskScore] = useState({ 'validated' false, 'error' false });
+  const [isValidStatus, setValidStatus] = useState({ 'validated' false, 'error' false });
+  const [isButtonValid, setIsButtonValid] = useState(false);
+  const [isValidLattitude, setisValidLattitude] = useState({ 'validated' false, 'error' false });
+  const [isValidLongitude, setIsValidLongitude] = useState({ 'validated' false, 'error' false });
+  const [longitudeHelptext, setLongitudeHelpText] = useState(null);
+  const [lattitudeHelptext, setLattiitudeHelpText] = useState(null);
+  const [shipmentIdHelperText, setShipmentIdHelperText] = useState(null);
+  const [isValidDate, setValidDate] = useState({ 'validated' false, 'error' false })
+  const[riskSelectorList,setRiskSelectorList]=useState([]);
+
+  const [fields, setFields] = useState([]);
+  const [shipmentId, setShipmentId] = useState();
+  const [org, setOrg] = useState();
+  const [date, setDate] = useState();
+  const [riskScore, setRiskScore] = useState();
+  const [status, setStatus] = useState();
+  const [createdAt, setcreatedAt] = useState();
+  const [lattitude, setLattitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [records, setRecords] = useState([]);
+  const [maprecords, setMapRecords] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [displayRecord, setDisplayRecord] = useState([]);
+
+  useEffect(() = {
+    if (!isValidDate.error && isValidDate.validated && isValidOrganization.validated && !isValidOrganization.error && isValidShippmentId.validated && !isValidShippmentId.error && !isValidLattitude.error && isValidLattitude.validated && !isValidLongitude.error && isValidLongitude.validated && isValidStatus.validated && !isValidStatus.error && isValidRiskScore.validated && !isValidRiskScore.error) {
+      setIsButtonValid(true);
+    }
+
+    else {
+      setIsButtonValid(false);
+    }
+  }, [isValidShippmentId, isValidLattitude, isValidRiskScore, isValidOrganization, isValidStatus, isValidDate, isValidLongitude])
+
+  useEffect(() = {
+    if (selectedItems.length !== 0) {
+      const filtered = records.filter((el) =
+        selectedItems.includes(el.org.toLowerCase())
+      );
+      setDisplayRecord(filtered);
+    } else {
+      setDisplayRecord(records);
+    }
+  }, [selectedItems, records]);
+
+
+
+
+
+
+  const getShippingTime = (date) = {
+    let d = new Date(date);
+    setDate(d.getTime());
+    let epochtime = new Date().getTime();
+    setcreatedAt(epochtime);
+    return;
+  }
+
+  const displayMap = (props) = {
+    return (
+      div
+        style={{
+          padding 10px,
+          border 2px solid black
+        }}
+      
+        p{props.data.shipmentId}p
+      div
+    )
+
+  }
+
+  const mutliDatePicker=(startdate,enddate)=
+  {
+    var reco_local=displayRecord;
+     const starttime=new Date(starttime).getTime();
+     const enddtime=new Date(enddate).getTime();
+     if(reco_local.length!=0)
+     {
+       reco_local.filter((item)=item.date=startdate && item.date=enddate);
+       setDisplayRecord(reco_local);
+     }
+   
+     else
+     {
+      
+     }
+
+  }
+
+
+  const reset = () = {
+    setRiskScore();
+    setLattitude(null);
+    setLongitude(null);
+    setOrg();
+    setShipmentId();
+    setStatus();
+    setDate();
+    setcreatedAt();
+  }
+  const UIShippingIdCheck = (value) = {
+    let pattern = ^[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}$
+
+    if (pattern.test(value) == false) {
+      setValidShippmentId({ 'validated' true, 'error' true });
+      setShipmentIdHelperText(16 alphanumeric characters must);
+
+    }
+
+    else {
+
+      setShipmentId(value);
+      setShipmentIdHelperText(null);
+      APIShippingIdCheck(value);
+    }
+  }
+
+
+
+  const APIShippingIdCheck = (value) = {
+    $cjs.cjsRESTAPICall({
+      type POST,
+      data { value },
+      url 'lzsamplemap-mooricb_m4b7XH8vBqqk0FrzMBvalidShippmentId',
+      done (r) = {
+        if (r.exists == true) {
+          console.log(The nAMe already exists);
+          setShipmentIdHelperText(The Name Exists Already);
+          setValidShippmentId({ 'validated' true, 'error' true });
+        }
+
+        else {
+          setValidShippmentId({ 'validated' true, 'error' false });
+          setShipmentIdHelperText(null)
+        }
+      },
+      fail () = {
+        setValidShippmentId({ 'validated' true, 'error' true });
+        setShipmentIdHelperText(Error in checking th)
+
+      }
+    })
+
+
+
+
+  }
+
+
+  const UIOrganizationCheck = (value) = {
+    let pattern = ^[a-zA-Z0-9][a-zA-Z0-9'@#$ ]$
+
+    if (pattern.test(value) == false) {
+      setValidOrganization({ 'validated' false, 'error' true });
+
+    }
+
+    else {
+
+      setValidOrganization({ 'validated' true, 'error' false });
+
+    }
+
+  }
+
+
+  const UIValidRiskScoreCheck = (value) = {
+    let choice = value.toLowerCase();
+    if (choice === 'lr'  choice === 'mr'  choice === 'hr'  choice === 'nr') {
+      setValidRiskScore({ 'validated' true, 'error' false });
+    }
+
+
+    else {
+      setValidRiskScore({ 'validated' true, 'error' true });
+    }
+
+  }
+
+
+  const UILongitudeValidation = (value) = {
+    if (value == ) {
+      setIsValidLongitude({ 'validated' true, 'error' true });
+      setLongitudeHelpText(The longitude must be an integer value);
+    }
+
+    else if (value  180  value  -180) {
+      setIsValidLongitude({ 'validated' true, 'error' true });
+      setLongitudeHelpText(The longitude must be -180 and 180);
+    }
+
+    else {
+      setLongitudeHelpText(null);
+      setIsValidLongitude({ 'validated' true, 'error' false });
+    }
+
+  }
+
+
+  const handleFormSubmit = () = {
+
+    const TEMPLATE_URL = lzsamplemap-moorIpxK0UPTQ5AkQqlIyrjJx4;
+    const DATA_URL = lzsamplemap-moorhPzkWO7EDiBctaNzdC_9g4;
+    let coords={lattitude,longitude};
+    const payload = { shipmentId, org, shipDate date, riskScore, status, createdAt, coords { lattitude parseInt(lattitude), longitude parseInt(longitude) } };
+    console.log(Submitted Data, payload);
+    setisDialogueValid(false);
+    {
+  const [shipmentId, setShipmentId] = useState();
+  const [org, setOrg] = useState();
+  const [date, setDate] = useState();
+  const [riskScore, setRiskScore] = useState();
+  const [status, setStatus] = useState();
+  const [createdAt, setcreatedAt] = useState();
+  const [lattitude, setLattitude] = useState(0);
+  const [longitude, setLongitude] = useState(0);   }
+
+    $cjs.concept({
+      action CREATE,
+      templateUri TEMPLATE_URL,  todo-template-uri
+      concept {
+        parent DATA_URL, uri of data folder
+        name payload.shipmentId,name of file
+        category ordersData, use any category name
+        properties {
+          ShippingTemplate payload here, todo is the propertyName pointing to the lambda concept in the template concept; newTodo is the values to be populated in the concept
+        }
+      },
+      done (uri) = {
+        console.log('uri', uri);
+      },
+      fail function (error) {
+        console.log(creation call failed, error + error);
+      }
+    });
+
+    reset();
+
+    setTimeout(() = {
+      fetchRecords();
+    }, 2000);
+    setIsButtonValid(false);
+  }
+
+
+
+
+
+
+
+
+  useEffect(() = { getTableFields(); }, []);
+  useEffect(() = { fetchRecords(); }, []);
+
+
+  const fetchRecords = () = {
+    $cjs.cjsRESTAPICall({
+      type GET,
+      url 'lzsamplemap-mooricb_m4b7XH8vBqqk0FrzMBshippingvalues',
+      done (r) = {
+        console.log(r);
+        let tablerecords = r.map((item) = ({ shipmentId item.shipmentId, org item.org, riskScore item.riskScore, status item.status, isRowMaster true }));
+        let fullRecords=r.map((item) = ({ shipmentId item.shipmentId, org item.org, riskScore item.riskScore, status item.status,shipDateitem.shipDate,lattitudeitem.lattitude,longitudeitem.longitude }));
+        setRecords(fullRecords);
+        console.log(fullRecords);
+        setDisplayRecord(tablerecords);
+        console.log(tablerecords);
+        let mr = r.map((item) = ({ shipmentId shipmentId, lattitude item.lattitude, longitude item.longitude }));
+        setMapRecords(mr);
+      },
+      fail () = { console.log(Error); }
+    })
+
+
+  }
+
+
+  const getTableFields = () = {
+    $cjs.cjsRESTAPICall({
+      type GET,
+      url 'lzsamplemap-mooricb_m4b7XH8vBqqk0FrzMBShippingtableFields',
+      done (r) = {
+        console.log(r);
+        let fieldValues = [];
+        for (let item of r) {
+          if (item.field == shipmentId) {
+            const vals = { field item.field, headerName item.headerName, cellRenderer 'agGroupCellRenderer' };
+            fieldValues.push(vals);
+          }
+
+          else {
+            const vals = { field item.field, headerName item.headerName };
+            fieldValues.push(vals);
+          }
+        }
+        console.log(fieldValues);
+        setFields(fieldValues);
+      },
+      fail () = { console.log(Error); }
+    })
+
+  }
+
+  const [isDialogueValid, setisDialogueValid] = useState(false);
+  const buttonRef = useRef(null);
+
+
+
+  const handleClick = () = {
+    setisDialogueValid(true);
+  }
+
+  const onClose = () = {
+    setisDialogueValid(false);
+  }
+
+  {
+  const handleFormSubmit = () = {
+    setisDialogueValid(false);
+  }      }
+
+  const anchorEl = () = {
+    return buttonRef.current;
+
+  }
+
+
+  const items = [
+    { id 'moderna', name 'Moderna' },
+    { id 'paraxel', name 'Paraxel' },
+    { id 'uva health pharmacy services', name 'UVA Health Pharmacy Services' },
+    { id 'vpl rx', name 'VPL Rx' },
+    { id 'dupont', name 'DuPont' },
+     { id 'pfizer', name 'Pfizer' }
+  ];
+
+  const handleChangeOrgSelector = (event) = {
+    const {
+      target { value },
+    } = event;
+    setSelectedItems(
+       On autofill we get a stringified value.
+      typeof value === 'string'  value.split(',')  value,
+    );
+  };
+
+
+   const Riskitems = [
+    { id 'LR', name 'Low Risk' },
+    { id 'HR', name 'High Risk' },
+    { id 'MR', name 'Moderate Risk' },
+    { id 'NR', name 'No Risk' },
+  ];
+
+  const handleChangeRiskSelector = (event) = {
+    const {
+      target { value },
+    } = event;
+    setRiskSelectorList(
+       On autofill we get a stringified value.
+      typeof value === 'string'  value.split(',')  value,
+    );
+  };
+
+
+  return (
+    
+      h1Shippment Trackingh1
+      Grid sx={{ marginLeft 55vw, marginBottom 1vh }}
+        Button ref={buttonRef} onClick={handleClick} variant=contained color=primary sx={{ padding '10px 20px' }} Add an orderButton
+      Grid
+      Dialog
+        open={isDialogueValid}
+        onClose={onClose}
+      
+
+        {}
+        Grid container component=form direction=column spacing={2} sx={{ padding 1, width 25vw }} 
+          { Row 1 Shipment ID, Organization }
+          Grid item xs={12} sm={6} md={6} lg={6}
+            TextField
+              fullWidth
+              name=shipmentId
+              label=Shipment ID
+              value={shipmentId}
+              helperText={shipmentIdHelperText}
+              sx={{
+                '& .MuiOutlinedInput-root' {
+                  '& fieldset, &hover fieldset, &.Mui-focused fieldset' {
+                    borderColor !isValidShippmentId.validated  '#B4B1B3'  isValidShippmentId.error  'red'  'green'
+                  }
+                }
+              }}
+              inputProps={{ pattern ^[0-9a-zA-Z]$ }}
+              onChange={(e) = { setShipmentId(e.target.value.toUpperCase()) }}
+              onBlur={(e) = { UIShippingIdCheck(e.target.value); }}
+              onKeyDown={(e) = {
+                if (e.key === Enter) { { UIShippingIdCheck(e.target.value); } }
+              }}
+
+            
+          Grid
+
+          Grid item xs={12} sm={6} md={6} lg={6}
+            TextField
+              fullWidth
+              select
+              name=Organization
+              label=Organization
+              value={org}
+              onChange={(e) = { setOrg(e.target.value); setValidOrganization({ validated true, error false }); }}
+            
+              MenuItem value=ModernaModernaMenuItem
+              MenuItem value=ParaxelParaxelMenuItem
+              MenuItem value=PfizerPfizerMenuItem
+              MenuItem value=UVA Health Pharmacy ServicesUVA Health Pharmacy ServicesMenuItem
+              MenuItem value=VPL RxVPL RxMenuItem
+              MenuItem value=DuPontDuPontMenuItem
+            TextField
+          Grid
+
+          { Row 2 Shipping Date, Risk Category }
+          Grid item xs={12} sm={6} md={6} lg={6}
+            TextField
+              fullWidth
+              label=Shipping Date
+              name=shipDate
+              type=date
+              InputLabelProps={{ shrink true }}
+              inputProps={{
+                max new Date().toISOString().split('T')[0]  Restricts to today's date
+              }}
+              onChange={(e) = {
+                if (e.target.value) {
+                  getShippingTime(e.target.value);
+                  setValidDate({ validated true, error false });
+                }
+
+                else {
+                  setDate();
+                  setValidDate({ validated true, error true });
+                }
+
+
+              }}
+            
+          Grid
+
+          Grid item xs={12} sm={6} md={6} lg={6}
+            TextField
+              fullWidth
+              select
+              label=Risk Category
+              value={riskScore}
+              onChange={(e) = {
+                if (e.target.value) {
+                  setRiskScore(e.target.value)
+                  setValidRiskScore({ validated true, error false })
+                }
+
+                else {
+                  setRiskScore();
+                  setValidRiskScore({ validated true, error true })
+
+                }
+              }
+              }
+              onBlur={(e) = UIValidRiskScoreCheck(e.target.value)}
+              onKeyDown={(e) = {
+                if (e.key === Enter) {
+                  UIValidRiskScoreCheck(e.target.value);
+                }
+              }}
+            
+              MenuItem value=NRNRMenuItem
+              MenuItem value=LRLRMenuItem
+              MenuItem value=MRMRMenuItem
+              MenuItem value=HRHRMenuItem
+            TextField
+          Grid
+
+
+          { Row 3 Status, Created By }
+          Grid item xs={12} sm={6} md={6} lg={6}
+            TextField
+              fullWidth
+              select
+              label=Status
+              value={status}
+              onChange={(e) = {
+                if (e.target.value) {
+                  setStatus(e.target.value);
+                  setValidStatus({ validated true, error false })
+                }
+
+                else {
+                  setValidStatus({ validated true, error true })
+                }
+              }}
+            
+              MenuItem value=ScheduledScheduledMenuItem
+              MenuItem value=In NetworkIn NetworkMenuItem
+              MenuItem value=CompletedCompletedMenuItem
+            TextField
+          Grid
+
+          {
+            Grid item xs={12} sm={6} md={6} lg={6}
+              TextField
+                fullWidth
+                label=Created By
+                name=createdAt
+                type=date
+                InputLabelProps={{ shrink true }}
+                inputProps={{
+                  max new Date().toISOString().split('T')[0]  Restricts to today's date
+                }}
+                onChange={(e) = { setcreatedAt(e.target.value) }}
+              
+            Grid   }
+
+          { Row 4 Location Fields }
+          Grid item xs={12} sm={6} md={6} lg={6}
+            TextField
+              fullWidth
+              label=Latitude
+              name=lat
+              type=number
+              value={lattitude}
+              helperText={lattitudeHelptext}
+              inputProps={{
+                min -90,
+                max 90
+              }}
+              onChange={(e) = {
+                const value = parseFloat(e.target.value);
+                if (isNaN(value)) { setisValidLattitude({ 'validated' true, 'error' true }); setLattitude(); setLattiitudeHelpText(Lattitude must be a number ); }
+                else if (value  -90  value  90) { setisValidLattitude({ 'validated' true, 'error' true }); setLattitude(); setLattiitudeHelpText(Lattitude must be greater than -90 and less than 90) }
+                else { setisValidLattitude({ 'validated' true, 'error' false }); setLattitude(value); setLattiitudeHelpText(null); }
+              }}
+            
+          Grid
+
+          Grid item xs={12} sm={6} md={6} lg={6}
+            TextField
+              fullWidth
+              label=Longitude
+              name=longi
+              type=number
+              value={longitude}
+              helperText={longitudeHelptext}
+              inputProps={{
+                min -180,
+                max 180
+              }}
+              onChange={(e) = {
+                if (e.target.value) {
+                  setLongitude(parseFloat(e.target.value));
+                }
+
+                else {
+                  setLongitude();
+                  setIsValidLongitude({ validated true, error true });
+                }
+
+
+              }}
+
+              onBlur={(e) = { UILongitudeValidation(e.target.value) }}
+              onKeyDown={(e) = {
+                if (e.key === Enter) {
+                  UILongitudeValidation(e.target.value);
+                }
+              }}
+            
+          Grid
+
+          { Submit Button Row }
+          Grid item xs={12} sx={{ display 'flex', justifyContent 'center', mt 2 }}
+            Button
+              variant=contained
+              disabled={!isButtonValid}
+              size=large
+              sx={{ minWidth 120 }}
+              onClick={handleFormSubmit}
+            
+              Submit
+            Button
+          Grid
+
+        Grid
+
+      Dialog
+      Grid
+        FormControl sx={{ m 1, width 300 }}
+          InputLabel id=multi-select-checkbox-labelOrganizationsInputLabel
+          Select
+            labelId=multi-select-checkbox-label
+            id=multi-select-checkbox
+            multiple
+            value={selectedItems}
+            onChange={handleChangeOrgSelector}
+            input={OutlinedInput label=Organizations }
+            renderValue={(selected) =
+              selected.map(item = items.find(i = i.id === item).name).join(, )
+            }
+          
+            {items.map((item) = (
+              MenuItem key={item.id} value={item.id}
+                Checkbox checked={selectedItems.indexOf(item.id)  -1} 
+                ListItemText primary={item.name} 
+              MenuItem
+            ))}
+          Select
+        FormControl
+
+           Grid
+            FormControl sx={{ m 1, width 300 }}
+          InputLabel id=multi-select-checkbox-labelRisk CategoriesInputLabel
+          Select
+            labelId=multi-select-checkbox-label
+            id=multi-select-checkbox
+            multiple
+            value={riskSelectorList}
+            onChange={handleChangeRiskSelector}
+            input={OutlinedInput label=Risk Categories }
+            renderValue={(selected) =
+              selected.map(item = items.find(i = i.id === item).name).join(, )
+            }
+          
+            {items.map((item) = (
+              MenuItem key={item.id} value={item.id}
+                Checkbox checked={selectedItems.indexOf(item.id)  -1} 
+                ListItemText primary={item.name} 
+              MenuItem
+            ))}
+          Select
+        FormControl
+      Grid
+
+
+
+
+
+
+
+
+
+
+
+      Grid
+      div style={{ height 100vh, width 100vw }} className=ag-theme-alpine
+        AgGridReact rowData={displayRecord} columnDefs={fields} masterDetail={true} detailCellRenderer={displayMap} 
+      div
+    
+  )
+}
+
+
+
+
+
+  const UIValidRiskScoreCheck=(value)=
+   {
+      let choice=value.toLowerCase();
+    if(choice==='lr'  choice==='mr'  choice==='hr'  choice==='nr')
+    {
+      setValidRiskScore({ 'validated' true, 'error' false });
+      }
+
+    else
+    {
+      setValidRiskScore({ 'validated' true, 'error' true });
+      }
+ 
+   } 
+ RENDER METHODS 
+function getInitialState() {
+  var ans = {};
+  $('.initialState dt').each(function () {
+    var key = $(this).parent().attr(id);
+    var subKey = $(this).text();
+    var subVal = $(this).next().text();
+    if (_.isUndefined(key)) {
+      ans[subKey] = subVal;
+    } else {
+      if (!(key in ans)) {
+        ans[key] = {};
+      }
+      ans[key][subKey] = subVal;
+    }
+  });
+  return ans;
+}
+
+function renderClass(tagName, props, classDef) {
+  var initialState = getInitialState();
+  if (props) {
+    initialState = $.extend(initialState, props);
+  }
+
+  ReactDOM.render(React.createElement(classDef, initialState), document.querySelector(tagName));
+}
+
+$(function () {
+  renderClass(dashboard, null, MyApp);
+})type your code her

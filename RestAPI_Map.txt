@@ -1,0 +1,422 @@
+const Recordmakers = () => {
+  $cjs.search({
+    uri: "/lzsample/map-moor/7wQzqL-Cph8A7KYBYHCzc6/",
+    queryJson: {
+      "match_all": {}
+    },
+    sortJson: null,
+    done: function (data) {
+      if (data.hits && data.hits.hits) {
+        let transformedData = data.hits.hits
+          .filter(item =>
+            item._source.shipmentId.length != 0 && item._source.riskScore.length != 0 && item._source.createdBy != 0 && item._source.shipmentId != null && item._source.riskScore != null && item._source.createdBy != null
+          )
+          .map(item => ({
+            shipmentId: item._source.shipmentId,
+            riskScore: item._source.riskScore,
+            org: item._source.org,
+            status: item._source.status
+          }));
+        //console.log(data);
+        //console.log(Array.isArray(transformedData));
+        return (transformedData);
+
+      }
+
+      else {
+        resolve("Something is seriously wrong");
+      }
+
+    },
+    fail: function (jqXHR, textStatus, errorThrown) {
+      console.log("search call failed, status:" + textStatus + ", error:" + errorThrown + ", server response:" + ((jqXHR.responseText) ? jqXHR.responseText : ""));
+    }
+  });
+}
+
+const fieldValues = () => {
+  // { field: "email", headerName: "Email ID" },
+  /*
+  [
+'shipmentId',
+'org',
+'shipDate',
+'riskScore',
+'status',
+'createdBy',
+'lattitude',
+'longitude'
+]
+  
+  
+  */
+
+  let fields = [{ field: "shipmentId", headerName: "ShipmentID",cellRenderer: "agGroupCellRenderer"}, { field: "org", headerName: "Organization" }, { field: "riskScore", headerName: "RiskScore" }, { field: "status", headerName: "Status" }];
+  return fields;
+}
+
+
+return {
+  "GET /shipping/values": function (a, b, c, d) {
+    return new Promise((resolve, reject) => {
+      $cjs.search({
+        uri: "/lzsample/map-moor/7wQzqL-Cph8A7KYBYHCzc6/",
+        queryJson: {
+          "match_all": {}
+        },
+        sortJson: null,
+        done: function (data) {
+          if (data.hits && data.hits.hits) {
+            let transformedData = data.hits.hits
+              .filter(item =>
+                item._source.shipmentId.length != 0 && item._source.riskScore.length != 0 && item._source.createdBy != 0 && item._source.coords.lattitude != null && item._source.coords.longitude != null)
+              .map(item => ({
+                shipmentId: item._source.shipmentId,
+                riskScore: item._source.riskScore,
+                org: item._source.org,
+                status: item._source.status,
+                lattitude: item._source.coords.lattitude,
+                longitude: item._source.coords.longitude,
+                shipDate: item._source.shipDate
+              }));
+            //console.log(data);
+            //console.log(Array.isArray(transformedData));
+            resolve(transformedData);
+            console.log(transformedData);
+
+          }
+
+          else {
+            resolve("Something is seriously wrong");
+          }
+
+        },
+        fail: function (jqXHR, textStatus, errorThrown) {
+          console.log("search call failed, status:" + textStatus + ", error:" + errorThrown + ", server response:" + ((jqXHR.responseText) ? jqXHR.responseText : ""));
+        }
+      });
+    })
+  },
+  "GET /Shipping/tableFields": function (a, b, c, d) {
+    return new Promise((resolve, reject) => {
+      const tabColumns = fieldValues();
+      resolve(tabColumns);
+    })
+  },
+  "POST /valid/ShippmentId": function (a, b, c, d) {
+    const id = d.value.toUpperCase();
+    return new Promise((resolve, reject) => {
+      $cjs.search({
+        uri: "/lzsample/map-moor/7wQzqL-Cph8A7KYBYHCzc6/",
+        queryJson: {
+          "match_all": {}
+        },
+        sortJson: null,
+        done: function (data) {
+          if (data.hits && data.hits.hits) {
+            let shippingIdlist = data.hits.hits.filter(item =>
+              item._source.shipmentId.length != 0 && item._source.riskScore.length != 0 && item._source.createdBy != 0)
+              .map(item => item._source.shipmentId)
+            //console.log(data);
+            //console.log(Array.isArray(transformedData));
+            if (shippingIdlist.includes(id)) {
+              resolve({ "exists": true, "name": id });
+            }
+
+            else {
+              resolve({ "exists": false, "name": null });
+            }
+
+          }
+
+          else {
+            resolve({ "exists": false, "name": null });
+          }
+
+        },
+        fail: function (jqXHR, textStatus, errorThrown) {
+          resolve({ "exists": true, "name": null });
+        }
+      })
+
+    })
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ 
+
+
+
+
+const db = [
+  {
+    "shipmentId": "1IIWC9W0OAH1458J",
+    "org": "OrgE",
+    "shipDate": "2023-04-13",
+    "riskScore": "NR",
+    "status": "Completed",
+    "createdBy": "2025-10-02",
+    "coords": {
+      "lat": 68.176845,
+      "lng": 158.131535
+    }
+  },
+  {
+    "shipmentId": "792WIUQNWZ5NP6X7",
+    "org": "OrgE",
+    "shipDate": "2023-12-21",
+    "riskScore": "LR",
+    "status": "Scheduled",
+    "createdBy": "2023-12-16",
+    "coords": {
+      "lat": 20.11325,
+      "lng": 58.153606
+    }
+  },
+  {
+    "shipmentId": "US3Z3DH76VXVLWCO",
+    "org": "OrgC",
+    "shipDate": "2021-09-25",
+    "riskScore": "MR",
+    "status": "Completed",
+    "createdBy": "2020-01-19",
+    "coords": {
+      "lat": 27.848688,
+      "lng": 92.975707
+    }
+  },
+  {
+    "shipmentId": "14DULXYF6AE8A1OA",
+    "org": "OrgA",
+    "shipDate": "2020-05-10",
+    "riskScore": "NR",
+    "status": "Completed",
+    "createdBy": "2021-06-28",
+    "coords": {
+      "lat": -0.140848,
+      "lng": -73.038865
+    }
+  },
+  {
+    "shipmentId": "T9T1SD7E61B0CH4P",
+    "org": "OrgD",
+    "shipDate": "2022-07-11",
+    "riskScore": "HR",
+    "status": "In Network",
+    "createdBy": "2025-04-09",
+    "coords": {
+      "lat": 83.622694,
+      "lng": -59.592173
+    }
+  },
+  {
+    "shipmentId": "ZK5V20X9NCU6LROD",
+    "org": "OrgC",
+    "shipDate": "2021-05-23",
+    "riskScore": "LR",
+    "status": "Scheduled",
+    "createdBy": "2021-03-05",
+    "coords": {
+      "lat": 33.104215,
+      "lng": -7.945852
+    }
+  },
+  {
+    "shipmentId": "XK8V2M7ALD2ZP5TY",
+    "org": "OrgA",
+    "shipDate": "2022-03-16",
+    "riskScore": "NR",
+    "status": "In Network",
+    "createdBy": "2020-06-12",
+    "coords": {
+      "lat": -21.340155,
+      "lng": 148.940365
+    }
+  },
+  {
+    "shipmentId": "A83X1PLM4O2BYZ6K",
+    "org": "OrgB",
+    "shipDate": "2025-09-15",
+    "riskScore": "HR",
+    "status": "Completed",
+    "createdBy": "2024-10-29",
+    "coords": {
+      "lat": -33.795814,
+      "lng": -70.65419
+    }
+  },
+  {
+    "shipmentId": "WD7Z2BL9M1XTV3CQ",
+    "org": "OrgE",
+    "shipDate": "2023-07-05",
+    "riskScore": "MR",
+    "status": "Scheduled",
+    "createdBy": "2021-11-03",
+    "coords": {
+      "lat": 47.32972,
+      "lng": -0.428246
+    }
+  },
+  {
+    "shipmentId": "J3ZK1T8W4R5N6OPL",
+    "org": "OrgD",
+    "shipDate": "2020-11-19",
+    "riskScore": "NR",
+    "status": "In Network",
+    "createdBy": "2022-07-07",
+    "coords": {
+      "lat": 12.875935,
+      "lng": 101.768351
+    }
+  },
+  {
+    "shipmentId": "R5N1X9VZ0K8L7JQM",
+    "org": "OrgB",
+    "shipDate": "2021-10-12",
+    "riskScore": "HR",
+    "status": "Completed",
+    "createdBy": "2021-02-27",
+    "coords": {
+      "lat": 41.590487,
+      "lng": -87.72569
+    }
+  },
+  {
+    "shipmentId": "M2QK9L6X1D8B3Z4N",
+    "org": "OrgA",
+    "shipDate": "2025-08-04",
+    "riskScore": "LR",
+    "status": "Scheduled",
+    "createdBy": "2023-05-01",
+    "coords": {
+      "lat": -2.991834,
+      "lng": 101.378102
+    }
+  },
+  {
+    "shipmentId": "QZ8X1Y2M3W7N6OPK",
+    "org": "OrgE",
+    "shipDate": "2022-02-14",
+    "riskScore": "MR",
+    "status": "In Network",
+    "createdBy": "2024-06-18",
+    "coords": {
+      "lat": 36.87743,
+      "lng": -118.24017
+    }
+  },
+  {
+    "shipmentId": "P7R3K9D6M2N5X1LB",
+    "org": "OrgC",
+    "shipDate": "2023-03-28",
+    "riskScore": "HR",
+    "status": "Completed",
+    "createdBy": "2020-08-09",
+    "coords": {
+      "lat": -45.92056,
+      "lng": 170.50435
+    }
+  },
+  {
+    "shipmentId": "Z8M2N6K4X1W7R3PL",
+    "org": "OrgD",
+    "shipDate": "2020-12-30",
+    "riskScore": "NR",
+    "status": "Scheduled",
+    "createdBy": "2024-09-03",
+    "coords": {
+      "lat": -10.18412,
+      "lng": -48.33305
+    }
+  },
+  {
+    "shipmentId": "X9W3L5M7N2D4P6K8",
+    "org": "OrgA",
+    "shipDate": "2024-06-21",
+    "riskScore": "LR",
+    "status": "In Network",
+    "createdBy": "2021-12-25",
+    "coords": {
+      "lat": 9.93523,
+      "lng": 76.2673
+    }
+  },
+  {
+    "shipmentId": "M8K4P2W6X7N3D1L9",
+    "org": "OrgB",
+    "shipDate": "2021-07-17",
+    "riskScore": "MR",
+    "status": "Completed",
+    "createdBy": "2023-04-12",
+    "coords": {
+      "lat": 48.8566,
+      "lng": 2.3522
+    }
+  },
+  {
+    "shipmentId": "L2K8M5N7D3X1P9W4",
+    "org": "OrgE",
+    "shipDate": "2025-02-03",
+    "riskScore": "HR",
+    "status": "Scheduled",
+    "createdBy": "2022-05-23",
+    "coords": {
+      "lat": 34.0522,
+      "lng": -118.2437
+    }
+  },
+  {
+    "shipmentId": "K9M3N2W7X5L8D1P4",
+    "org": "OrgC",
+    "shipDate": "2024-11-09",
+    "riskScore": "NR",
+    "status": "In Network",
+    "createdBy": "2021-08-14",
+    "coords": {
+      "lat": -23.5505,
+      "lng": -46.6333
+    }
+  }
+]
+
+
+
+*/
