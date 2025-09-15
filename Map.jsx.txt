@@ -1,4 +1,4 @@
-// Last Modified: 2025-09-15T13:39:39.359Z
+// Last Modified: 2025-09-15T14:16:30.732Z
 import ReactDOM from 'react-dom';
 import React, { useState, useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
@@ -48,6 +48,9 @@ const MyApp = () => {
   const [organizationSelectorList, setOrganizationSelectorList] = useState([]);
   const [regexPattern, setRegexPattern] = useState("");
   const [agGridTableValues, setAgGridTableValues] = useState([]);
+
+
+  
 
   {/*
 
@@ -179,11 +182,12 @@ const MyApp = () => {
   useEffect(() => {
     const nr = displayRecord.map((item) => ({ ...item, isRowMaster: true }))
     setAgGridTableValues(nr);
-    console.log("**********************");
-    setTimeout(() => {
-      console.log(nr);
-    }, 3000);
-    console.log("**********************");
+    console.log("Ag grid Table value",nr);
+    // console.log("**********************"); 
+    // setTimeout(() => {
+    //   console.log(nr);
+    // }, 3000);
+    // console.log("**********************");
   }, [displayRecord])
 
   /*
@@ -906,80 +910,25 @@ const MyApp = () => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       </Grid>
       <div style={{ height: "100vh", width: "100vw" }} className="ag-theme-alpine">
-        <AgGridReact rowData={agGridTableValues} columnDefs={fields} masterDetail={true} agDetailCellRenderer={displayMap} />
+      {/* //<AgGridReact rowData={agGridTableValues} columnDefs={fields} masterDetail={true} agDetailCellRenderer={displayMap} /> /*/ } 
+
+        {/*
+        <AgGridReact
+          rowData={rowData}
+          columnDefs={colDefs}
+          masterDetail={true}
+          detailCellRenderer={DisplayMap}   // <-- Custom component
+          detailCellRendererParams={{}}     // <-- Add this to stop AG Grid from expecting detailGridOptions
+        />  */}
+       
+        <AgGridReact 
+  rowData={agGridTableValues} 
+  columnDefs={fields} 
+  masterDetail={true}
+  detailCellRenderer={displayMap}
+/>
       </div>
     </>
   )
