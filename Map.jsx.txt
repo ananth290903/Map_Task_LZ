@@ -1,15 +1,15 @@
- Last Modified 2025-09-13T103802.201Z
+// Last Modified: 2025-09-15T05:13:45.611Z
 import ReactDOM from 'react-dom';
 import React, { useState, useEffect, useRef } from 'react';
-import Box from '@muimaterialBox';
-import TextField from '@muimaterialTextField';
-import MenuItem from '@muimaterialMenuItem';
-import Button from '@muimaterialButton';
-import Grid from '@muimaterialGrid';
-import Dialog from '@muimaterialDialog';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Dialog from '@mui/material/Dialog';
 import { AgGridReact } from 'ag-grid-react';
-import ag-grid-communitystylesag-grid.css;
-import ag-grid-communitystylesag-theme-alpine.css;
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
 
 import {
   FormControl,
@@ -17,39 +17,88 @@ import {
   Select,
   Checkbox,
   ListItemText,
-  OutlinedInput,  For a more visually distinct input
-} from '@muimaterial';
+  OutlinedInput, // For a more visually distinct input
+} from '@mui/material';
 
     
-const MyApp = () = {
-  const [isValidShippmentId, setValidShippmentId] = useState({ 'validated' false, 'error' false });
-  const [isValidOrganization, setValidOrganization] = useState({ 'validated' false, 'error' false });
-  const [isValidRiskScore, setValidRiskScore] = useState({ 'validated' false, 'error' false });
-  const [isValidStatus, setValidStatus] = useState({ 'validated' false, 'error' false });
+const MyApp = () => {
+  const [isValidShippmentId, setValidShippmentId] = useState({ 'validated': false, 'error': false });
+  const [isValidOrganization, setValidOrganization] = useState({ 'validated': false, 'error': false });
+  const [isValidRiskScore, setValidRiskScore] = useState({ 'validated': false, 'error': false });
+  const [isValidStatus, setValidStatus] = useState({ 'validated': false, 'error': false });
   const [isButtonValid, setIsButtonValid] = useState(false);
-  const [isValidLattitude, setisValidLattitude] = useState({ 'validated' false, 'error' false });
-  const [isValidLongitude, setIsValidLongitude] = useState({ 'validated' false, 'error' false });
+  const [isValidLattitude, setisValidLattitude] = useState({ 'validated': false, 'error': false });
+  const [isValidLongitude, setIsValidLongitude] = useState({ 'validated': false, 'error': false });
   const [longitudeHelptext, setLongitudeHelpText] = useState(null);
   const [lattitudeHelptext, setLattiitudeHelpText] = useState(null);
   const [shipmentIdHelperText, setShipmentIdHelperText] = useState(null);
-  const [isValidDate, setValidDate] = useState({ 'validated' false, 'error' false })
+  const [isValidDate, setValidDate] = useState({ 'validated': false, 'error': false })
   const[riskSelectorList,setRiskSelectorList]=useState([]);
+  const[statusSelectorList,setStatusSelectorList]=useState([]);
+  const[organizationSelectorList,setOrganizationSelectorList]=useState([]);
+  const[regexPattern,setRegexPattern]=useState("");
+
+
+  {/*
+
+   const DisplayRecords=useMemo(()=>{
+    if(DisplayRecord.length!=0)
+    {
+      if(statusSelectorList.length!0)
+      {
+        for(let ob of statusSelectorList)
+        {
+           let selected=Records.filter((item)=>item.status===ob);
+
+        }
+      }
+
+
+
+       if(riskSelectorList.length!0)
+      {
+        for(let ob of statusSelectorList)
+        {
+           displayRecord.find(item=>item.status===ob)
+           {
+            continue;
+           }
+
+           else
+           {
+             let nr=records.filter(item=>item.shippmentId===ob.shipmentId);
+            setDisplayRecord(item=>[...item,nr])
+           }
+        }
+      }
+
+      
+    }
+
+   },[statusSelectorList,riskSelectorList,OrgSelectorList])
+  
+  
+  
+  
+  
+  
+  */}
 
   const [fields, setFields] = useState([]);
-  const [shipmentId, setShipmentId] = useState();
-  const [org, setOrg] = useState();
-  const [date, setDate] = useState();
-  const [riskScore, setRiskScore] = useState();
-  const [status, setStatus] = useState();
-  const [createdAt, setcreatedAt] = useState();
+  const [shipmentId, setShipmentId] = useState("");
+  const [org, setOrg] = useState("");
+  const [date, setDate] = useState("");
+  const [riskScore, setRiskScore] = useState("");
+  const [status, setStatus] = useState("");
+  const [createdAt, setcreatedAt] = useState("");
   const [lattitude, setLattitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [records, setRecords] = useState([]);
   const [maprecords, setMapRecords] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [displayRecord, setDisplayRecord] = useState([]);
-
-  useEffect(() = {
+  const[riskoptions,setRiskOptions]=useState("");
+  useEffect(() => {
     if (!isValidDate.error && isValidDate.validated && isValidOrganization.validated && !isValidOrganization.error && isValidShippmentId.validated && !isValidShippmentId.error && !isValidLattitude.error && isValidLattitude.validated && !isValidLongitude.error && isValidLongitude.validated && isValidStatus.validated && !isValidStatus.error && isValidRiskScore.validated && !isValidRiskScore.error) {
       setIsButtonValid(true);
     }
@@ -58,10 +107,12 @@ const MyApp = () = {
       setIsButtonValid(false);
     }
   }, [isValidShippmentId, isValidLattitude, isValidRiskScore, isValidOrganization, isValidStatus, isValidDate, isValidLongitude])
+ 
 
-  useEffect(() = {
+/*
+ useEffect(() => {
     if (selectedItems.length !== 0) {
-      const filtered = records.filter((el) =
+      const filtered = records.filter((el) =>
         selectedItems.includes(el.org.toLowerCase())
       );
       setDisplayRecord(filtered);
@@ -71,11 +122,138 @@ const MyApp = () = {
   }, [selectedItems, records]);
 
 
+*/
+
+useEffect(() => {
+  let filtered = [...records];
+
+  // filter by status
+  if (statusSelectorList.length !== 0) {
+    filtered = filtered.filter((item) =>
+      statusSelectorList.includes(item.status)
+    );
+  }
+
+  // filter by risk
+  if (riskSelectorList.length !== 0) {
+    filtered = filtered.filter((item) =>
+      riskSelectorList.includes(item.risk)
+    );
+  }
+
+  // filter by org
+  if (organizationSelectorList.length !== 0) {
+    filtered = filtered.filter((item) =>
+    organizationSelectorList.includes(item.org)
+    );
+  }
+
+  if(typeof(regexPattern)==="string" && regexPattern.trim() )
+  {
+    try
+    {
+      const regex=new RegExp(regexPattern.trim(),"i");
+       filtered=filtered.filter((item)=>regex.test(item.shipmentId));
+    }
+
+    catch
+    {
+      console.log("No pair found");
+    }
+  }
+  setDisplayRecord(filtered);
+}, [statusSelectorList, riskSelectorList,organizationSelectorList,records,regexPattern]);
+
+
+/*
+  const searchforRegex=(value)=>
+  {
+    if(value==="")
+    {
+      return rec;
+    }
+    value=value.trim();
+    try
+    {
+     const rec=records;
+     const regex=new RegExp(value,"i");
+
+
+    }
+
+    catch
+    {
+       return rec;
+    }
+
+  }  */
 
 
 
 
-  const getShippingTime = (date) = {
+
+
+
+
+
+
+
+
+
+
+
+  const RiskDetail=['NR','LR','MR','HR'];
+  const orgDetail=['Moderna','Paraxel','Pfizer','UVA Health Pharmacy Services','VPL Rx','DuPont'];
+  
+  const RiskMenuProps={
+    PaperProps:{
+      style:{
+      maxHeight:48*4.4+10,
+      width:230}
+    }
+  }
+
+   const OrgMenuProps={
+    PaperProps:{
+      style:{
+      maxHeight:48*7+10,
+      width:230}
+    }
+  }
+
+  const HandleRiskOptions=(event)=>
+  {
+     const{target:{riskValue}}=event;
+     setRiskOptions(typeof(riskValue)==='string'?riskValue.split(','):riskValue);
+  }
+
+    const handleOrgOptions=(event)=>
+  {
+     const{target:{value}}=event;
+     setOrganizationSelectorList(typeof(value)==='string'?value.split(','):value);
+  }
+ 
+  const StatusMenuProps={
+    PaperProps:{
+      style:{
+        maxHeight:4.4*48+10,
+        width:230
+      }
+    }
+  }
+
+  const handleStatusChanges=(event)=>
+  {
+     const{target:{value}}=event;
+     setStatusSelectorList(typeof(value)==='string'?value.split(','):value);
+
+  }
+
+
+  const statusOptions=['Scheduled','Completed','In Network'];
+
+
+  const getShippingTime = (date) => {
     let d = new Date(date);
     setDate(d.getTime());
     let epochtime = new Date().getTime();
@@ -83,28 +261,28 @@ const MyApp = () = {
     return;
   }
 
-  const displayMap = (props) = {
+  const displayMap = (props) => {
     return (
-      div
+      <div
         style={{
-          padding 10px,
-          border 2px solid black
+          padding: "10px",
+          border: "2px solid black"
         }}
-      
-        p{props.data.shipmentId}p
-      div
+      >
+        <p>{props.data.shipmentId}</p>
+      </div>
     )
 
   }
 
-  const mutliDatePicker=(startdate,enddate)=
+  const mutliDatePicker=(startdate,enddate)=>
   {
     var reco_local=displayRecord;
      const starttime=new Date(starttime).getTime();
      const enddtime=new Date(enddate).getTime();
      if(reco_local.length!=0)
      {
-       reco_local.filter((item)=item.date=startdate && item.date=enddate);
+       reco_local.filter((item)=>item.date>=startdate && item.date<=enddate);
        setDisplayRecord(reco_local);
      }
    
@@ -116,22 +294,22 @@ const MyApp = () = {
   }
 
 
-  const reset = () = {
-    setRiskScore();
+  const reset = () => {
+    setRiskScore("");
     setLattitude(null);
     setLongitude(null);
-    setOrg();
-    setShipmentId();
-    setStatus();
-    setDate();
-    setcreatedAt();
+    setOrg("");
+    setShipmentId("");
+    setStatus("");
+    setDate("");
+    setcreatedAt("");
   }
-  const UIShippingIdCheck = (value) = {
-    let pattern = ^[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}$
+  const UIShippingIdCheck = (value) => {
+    let pattern = /^[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}$/
 
     if (pattern.test(value) == false) {
-      setValidShippmentId({ 'validated' true, 'error' true });
-      setShipmentIdHelperText(16 alphanumeric characters must);
+      setValidShippmentId({ 'validated': true, 'error': true });
+      setShipmentIdHelperText("16 alphanumeric characters must");
 
     }
 
@@ -145,26 +323,26 @@ const MyApp = () = {
 
 
 
-  const APIShippingIdCheck = (value) = {
+  const APIShippingIdCheck = (value) => {
     $cjs.cjsRESTAPICall({
-      type POST,
-      data { value },
-      url 'lzsamplemap-mooricb_m4b7XH8vBqqk0FrzMBvalidShippmentId',
-      done (r) = {
+      "type": "POST",
+      "data": { value },
+      "url": '/lzsample/map-moor/icb_m4b7XH8vBqqk0FrzMB/valid/ShippmentId',
+      done: (r) => {
         if (r.exists == true) {
-          console.log(The nAMe already exists);
-          setShipmentIdHelperText(The Name Exists Already);
-          setValidShippmentId({ 'validated' true, 'error' true });
+          //console.log("The nAMe already exists");
+          setShipmentIdHelperText("The Name Exists Already");
+          setValidShippmentId({ 'validated': true, 'error': true });
         }
 
         else {
-          setValidShippmentId({ 'validated' true, 'error' false });
+          setValidShippmentId({ 'validated': true, 'error': false });
           setShipmentIdHelperText(null)
         }
       },
-      fail () = {
-        setValidShippmentId({ 'validated' true, 'error' true });
-        setShipmentIdHelperText(Error in checking th)
+      fail: () => {
+        setValidShippmentId({ 'validated': true, 'error': true });
+        setShipmentIdHelperText("Error in checking th")
 
       }
     })
@@ -175,96 +353,96 @@ const MyApp = () = {
   }
 
 
-  const UIOrganizationCheck = (value) = {
-    let pattern = ^[a-zA-Z0-9][a-zA-Z0-9'@#$ ]$
+  const UIOrganizationCheck = (value) => {
+    let pattern = /^[a-zA-Z0-9][a-zA-Z0-9'@#$ ]*$/
 
     if (pattern.test(value) == false) {
-      setValidOrganization({ 'validated' false, 'error' true });
+      setValidOrganization({ 'validated': false, 'error': true });
 
     }
 
     else {
 
-      setValidOrganization({ 'validated' true, 'error' false });
+      setValidOrganization({ 'validated': true, 'error': false });
 
     }
 
   }
 
 
-  const UIValidRiskScoreCheck = (value) = {
+  const UIValidRiskScoreCheck = (value) => {
     let choice = value.toLowerCase();
-    if (choice === 'lr'  choice === 'mr'  choice === 'hr'  choice === 'nr') {
-      setValidRiskScore({ 'validated' true, 'error' false });
+    if (choice === 'lr' || choice === 'mr' || choice === 'hr' || choice === 'nr') {
+      setValidRiskScore({ 'validated': true, 'error': false });
     }
 
 
     else {
-      setValidRiskScore({ 'validated' true, 'error' true });
+      setValidRiskScore({ 'validated': true, 'error': true });
     }
 
   }
 
 
-  const UILongitudeValidation = (value) = {
-    if (value == ) {
-      setIsValidLongitude({ 'validated' true, 'error' true });
-      setLongitudeHelpText(The longitude must be an integer value);
+  const UILongitudeValidation = (value) => {
+    if (value == "") {
+      setIsValidLongitude({ 'validated': true, 'error': true });
+      setLongitudeHelpText("The longitude must be an integer value");
     }
 
-    else if (value  180  value  -180) {
-      setIsValidLongitude({ 'validated' true, 'error' true });
-      setLongitudeHelpText(The longitude must be -180 and 180);
+    else if (value > 180 || value < -180) {
+      setIsValidLongitude({ 'validated': true, 'error': true });
+      setLongitudeHelpText("The longitude must be -180 and 180");
     }
 
     else {
       setLongitudeHelpText(null);
-      setIsValidLongitude({ 'validated' true, 'error' false });
+      setIsValidLongitude({ 'validated': true, 'error': false });
     }
 
   }
 
 
-  const handleFormSubmit = () = {
+  const handleFormSubmit = () => {
 
-    const TEMPLATE_URL = lzsamplemap-moorIpxK0UPTQ5AkQqlIyrjJx4;
-    const DATA_URL = lzsamplemap-moorhPzkWO7EDiBctaNzdC_9g4;
-    let coords={lattitude,longitude};
-    const payload = { shipmentId, org, shipDate date, riskScore, status, createdAt, coords { lattitude parseInt(lattitude), longitude parseInt(longitude) } };
-    console.log(Submitted Data, payload);
+    const TEMPLATE_URL = "/lzsample/map-moor/IpxK0UPTQ5AkQqlIyrjJx4/";
+    const DATA_URL = "/lzsample/map-moor/hPzkWO7EDiBctaNzdC_9g4/";
+    //let coords={lattitude,longitude};
+    const payload = { shipmentId, org, shipDate: date, riskScore, status, createdAt, coords: { lattitude: parseInt(lattitude), longitude: parseInt(longitude) } };
+    console.log("Submitted Data:", payload);
     setisDialogueValid(false);
-    {
-  const [shipmentId, setShipmentId] = useState();
-  const [org, setOrg] = useState();
-  const [date, setDate] = useState();
-  const [riskScore, setRiskScore] = useState();
-  const [status, setStatus] = useState();
-  const [createdAt, setcreatedAt] = useState();
+    {/*
+  const [shipmentId, setShipmentId] = useState("");
+  const [org, setOrg] = useState("");
+  const [date, setDate] = useState("");
+  const [riskScore, setRiskScore] = useState("");
+  const [status, setStatus] = useState("");
+  const [createdAt, setcreatedAt] = useState("");
   const [lattitude, setLattitude] = useState(0);
-  const [longitude, setLongitude] = useState(0);   }
+  const [longitude, setLongitude] = useState(0);   */}
 
     $cjs.concept({
-      action CREATE,
-      templateUri TEMPLATE_URL,  todo-template-uri
-      concept {
-        parent DATA_URL, uri of data folder
-        name payload.shipmentId,name of file
-        category ordersData, use any category name
-        properties {
-          ShippingTemplate payload here, todo is the propertyName pointing to the lambda concept in the template concept; newTodo is the values to be populated in the concept
+      action: "CREATE",
+      templateUri: TEMPLATE_URL, // todo-template-uri
+      concept: {
+        parent: DATA_URL, //uri of data folder
+        name: payload.shipmentId,//name of file
+        category: "ordersData", //use any category name
+        properties: {
+          ShippingTemplate: payload //here, todo is the propertyName pointing to the lambda concept in the template concept; newTodo is the values to be populated in the concept
         }
       },
-      done (uri) = {
-        console.log('uri', uri);
+      done: (uri) => {
+        //console.log('uri', uri);
       },
-      fail function (error) {
-        console.log(creation call failed, error + error);
+      fail: function (error) {
+        //console.log("creation call failed, error:" + error);
       }
     });
 
     reset();
 
-    setTimeout(() = {
+    setTimeout(() => {
       fetchRecords();
     }, 2000);
     setIsButtonValid(false);
@@ -277,54 +455,54 @@ const MyApp = () = {
 
 
 
-  useEffect(() = { getTableFields(); }, []);
-  useEffect(() = { fetchRecords(); }, []);
+  useEffect(() => { getTableFields(); }, []);
+  useEffect(() => { fetchRecords(); }, []);
 
 
-  const fetchRecords = () = {
+  const fetchRecords = () => {
     $cjs.cjsRESTAPICall({
-      type GET,
-      url 'lzsamplemap-mooricb_m4b7XH8vBqqk0FrzMBshippingvalues',
-      done (r) = {
+      type: "GET",
+      url: '/lzsample/map-moor/icb_m4b7XH8vBqqk0FrzMB/shipping/values',
+      done: (r) => {
         console.log(r);
-        let tablerecords = r.map((item) = ({ shipmentId item.shipmentId, org item.org, riskScore item.riskScore, status item.status, isRowMaster true }));
-        let fullRecords=r.map((item) = ({ shipmentId item.shipmentId, org item.org, riskScore item.riskScore, status item.status,shipDateitem.shipDate,lattitudeitem.lattitude,longitudeitem.longitude }));
+        let tablerecords = r.map((item) => ({ "shipmentId": item.shipmentId, "org": item.org, "riskScore": item.riskScore, "status": item.status, isRowMaster: true }));
+        let fullRecords=r.map((item) => ({ "shipmentId": item.shipmentId, "org": item.org, "riskScore": item.riskScore, "status": item.status,"shipDate":item.shipDate,"lattitude":item.lattitude,"longitude":item.longitude }));
         setRecords(fullRecords);
         console.log(fullRecords);
         setDisplayRecord(tablerecords);
-        console.log(tablerecords);
-        let mr = r.map((item) = ({ shipmentId shipmentId, lattitude item.lattitude, longitude item.longitude }));
+        //console.log(tablerecords);
+        let mr = r.map((item) => ({ "shipmentId": shipmentId, "lattitude": item.lattitude, "longitude": item.longitude }));
         setMapRecords(mr);
       },
-      fail () = { console.log(Error); }
+      fail: () => { console.log("Error"); }
     })
 
 
   }
 
 
-  const getTableFields = () = {
+  const getTableFields = () => {
     $cjs.cjsRESTAPICall({
-      type GET,
-      url 'lzsamplemap-mooricb_m4b7XH8vBqqk0FrzMBShippingtableFields',
-      done (r) = {
-        console.log(r);
+      type: "GET",
+      url: '/lzsample/map-moor/icb_m4b7XH8vBqqk0FrzMB/Shipping/tableFields',
+      done: (r) => {
+        //console.log(r);
         let fieldValues = [];
         for (let item of r) {
-          if (item.field == shipmentId) {
-            const vals = { field item.field, headerName item.headerName, cellRenderer 'agGroupCellRenderer' };
+          if (item.field == "shipmentId") {
+            const vals = { "field": item.field, "headerName": item.headerName, cellRenderer: 'agGroupCellRenderer' };
             fieldValues.push(vals);
           }
 
           else {
-            const vals = { field item.field, headerName item.headerName };
+            const vals = { "field": item.field, "headerName": item.headerName };
             fieldValues.push(vals);
           }
         }
-        console.log(fieldValues);
+        //console.log(fieldValues);
         setFields(fieldValues);
       },
-      fail () = { console.log(Error); }
+      fail: () => { console.log("Error"); }
     })
 
   }
@@ -334,379 +512,415 @@ const MyApp = () = {
 
 
 
-  const handleClick = () = {
+  const handleClick = () => {
     setisDialogueValid(true);
   }
 
-  const onClose = () = {
+  const onClose = () => {
     setisDialogueValid(false);
   }
 
-  {
-  const handleFormSubmit = () = {
+  {/*
+  const handleFormSubmit = () => {
     setisDialogueValid(false);
-  }      }
+  }      */}
 
-  const anchorEl = () = {
+  const anchorEl = () => {
     return buttonRef.current;
 
   }
 
 
   const items = [
-    { id 'moderna', name 'Moderna' },
-    { id 'paraxel', name 'Paraxel' },
-    { id 'uva health pharmacy services', name 'UVA Health Pharmacy Services' },
-    { id 'vpl rx', name 'VPL Rx' },
-    { id 'dupont', name 'DuPont' },
-     { id 'pfizer', name 'Pfizer' }
+    { id: 'moderna', name: 'Moderna' },
+    { id: 'paraxel', name: 'Paraxel' },
+    { id: 'uva health pharmacy services', name: 'UVA Health Pharmacy Services' },
+    { id: 'vpl rx', name: 'VPL Rx' },
+    { id: 'dupont', name: 'DuPont' },
+     { id: 'pfizer', name: 'Pfizer' }
   ];
 
-  const handleChangeOrgSelector = (event) = {
+  const handleChangeOrgSelector = (event) => {
     const {
-      target { value },
+      target: { value },
     } = event;
     setSelectedItems(
-       On autofill we get a stringified value.
-      typeof value === 'string'  value.split(',')  value,
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
     );
   };
 
 
    const Riskitems = [
-    { id 'LR', name 'Low Risk' },
-    { id 'HR', name 'High Risk' },
-    { id 'MR', name 'Moderate Risk' },
-    { id 'NR', name 'No Risk' },
+    { id: 'LR', name: 'Low Risk' },
+    { id: 'HR', name: 'High Risk' },
+    { id: 'MR', name: 'Moderate Risk' },
+    { id: 'NR', name: 'No Risk' },
   ];
 
-  const handleChangeRiskSelector = (event) = {
+  const handleChangeRiskSelector = (event) => {
     const {
-      target { value },
+      target: { value },
     } = event;
     setRiskSelectorList(
-       On autofill we get a stringified value.
-      typeof value === 'string'  value.split(',')  value,
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
     );
   };
 
 
   return (
-    
-      h1Shippment Trackingh1
-      Grid sx={{ marginLeft 55vw, marginBottom 1vh }}
-        Button ref={buttonRef} onClick={handleClick} variant=contained color=primary sx={{ padding '10px 20px' }} Add an orderButton
-      Grid
-      Dialog
+    <>
+      <h1>Shipment Tracking</h1>
+      <Grid sx={{ marginLeft: "55vw", marginBottom: "1vh" }}>
+        <Button ref={buttonRef} onClick={handleClick} variant="contained" color="primary" sx={{ padding: '10px 20px' }} >Add an order</Button>
+      </Grid>
+      <Dialog
         open={isDialogueValid}
         onClose={onClose}
-      
+      >
 
-        {}
-        Grid container component=form direction=column spacing={2} sx={{ padding 1, width 25vw }} 
-          { Row 1 Shipment ID, Organization }
-          Grid item xs={12} sm={6} md={6} lg={6}
-            TextField
+        {/*************************************/}
+        <Grid container component="form" direction="column" spacing={2} sx={{ padding: 1, width: "25vw" }} >
+          {/* Row 1: Shipment ID, Organization */}
+          <Grid item xs={12} sm={6} md={6} lg={6}>
+            <TextField
               fullWidth
-              name=shipmentId
-              label=Shipment ID
+              name="shipmentId"
+              label="Shipment ID"
               value={shipmentId}
               helperText={shipmentIdHelperText}
               sx={{
-                '& .MuiOutlinedInput-root' {
-                  '& fieldset, &hover fieldset, &.Mui-focused fieldset' {
-                    borderColor !isValidShippmentId.validated  '#B4B1B3'  isValidShippmentId.error  'red'  'green'
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset, &:hover fieldset, &.Mui-focused fieldset': {
+                    borderColor: !isValidShippmentId.validated ? '#B4B1B3' : isValidShippmentId.error ? 'red' : 'green'
                   }
                 }
               }}
-              inputProps={{ pattern ^[0-9a-zA-Z]$ }}
-              onChange={(e) = { setShipmentId(e.target.value.toUpperCase()) }}
-              onBlur={(e) = { UIShippingIdCheck(e.target.value); }}
-              onKeyDown={(e) = {
-                if (e.key === Enter) { { UIShippingIdCheck(e.target.value); } }
+              inputProps={{ pattern: "^[0-9a-zA-Z]*$" }}
+              onChange={(e) => { setShipmentId(e.target.value.toUpperCase()) }}
+              onBlur={(e) => { UIShippingIdCheck(e.target.value); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { { UIShippingIdCheck(e.target.value); } }
               }}
 
-            
-          Grid
+            />
+          </Grid>
 
-          Grid item xs={12} sm={6} md={6} lg={6}
-            TextField
+          <Grid item xs={12} sm={6} md={6} lg={6}>
+            <TextField
               fullWidth
               select
-              name=Organization
-              label=Organization
+              name="Organization"
+              label="Organization"
               value={org}
-              onChange={(e) = { setOrg(e.target.value); setValidOrganization({ validated true, error false }); }}
-            
-              MenuItem value=ModernaModernaMenuItem
-              MenuItem value=ParaxelParaxelMenuItem
-              MenuItem value=PfizerPfizerMenuItem
-              MenuItem value=UVA Health Pharmacy ServicesUVA Health Pharmacy ServicesMenuItem
-              MenuItem value=VPL RxVPL RxMenuItem
-              MenuItem value=DuPontDuPontMenuItem
-            TextField
-          Grid
+              onChange={(e) => { setOrg(e.target.value); setValidOrganization({ "validated": true, "error": false }); }}
+            >
+              <MenuItem value="Moderna">Moderna</MenuItem>
+              <MenuItem value="Paraxel">Paraxel</MenuItem>
+              <MenuItem value="Pfizer">Pfizer</MenuItem>
+              <MenuItem value="UVA Health Pharmacy Services">UVA Health Pharmacy Services</MenuItem>
+              <MenuItem value="VPL Rx">VPL Rx</MenuItem>
+              <MenuItem value="DuPont">DuPont</MenuItem>
+            </TextField>
+          </Grid>
 
-          { Row 2 Shipping Date, Risk Category }
-          Grid item xs={12} sm={6} md={6} lg={6}
-            TextField
+          {/* Row 2: Shipping Date, Risk Category */}
+          <Grid item xs={12} sm={6} md={6} lg={6}>
+            <TextField
               fullWidth
-              label=Shipping Date
-              name=shipDate
-              type=date
-              InputLabelProps={{ shrink true }}
+              label="Shipping Date"
+              name="shipDate"
+              type="date"
+              InputLabelProps={{ shrink: true }}
               inputProps={{
-                max new Date().toISOString().split('T')[0]  Restricts to today's date
+                max: new Date().toISOString().split('T')[0] // Restricts to today's date
               }}
-              onChange={(e) = {
+              onChange={(e) => {
                 if (e.target.value) {
                   getShippingTime(e.target.value);
-                  setValidDate({ validated true, error false });
+                  setValidDate({ "validated": true, "error": false });
                 }
 
                 else {
-                  setDate();
-                  setValidDate({ validated true, error true });
+                  setDate("");
+                  setValidDate({ "validated": true, "error": true });
                 }
 
 
               }}
-            
-          Grid
+            />
+          </Grid>
 
-          Grid item xs={12} sm={6} md={6} lg={6}
-            TextField
+          <Grid item xs={12} sm={6} md={6} lg={6}>
+            <TextField
               fullWidth
               select
-              label=Risk Category
+              label="Risk Category"
               value={riskScore}
-              onChange={(e) = {
+              onChange={(e) => {
                 if (e.target.value) {
                   setRiskScore(e.target.value)
-                  setValidRiskScore({ validated true, error false })
+                  setValidRiskScore({ "validated": true, "error": false })
                 }
 
                 else {
-                  setRiskScore();
-                  setValidRiskScore({ validated true, error true })
+                  setRiskScore("");
+                  setValidRiskScore({ "validated": true, "error": true })
 
                 }
               }
               }
-              onBlur={(e) = UIValidRiskScoreCheck(e.target.value)}
-              onKeyDown={(e) = {
-                if (e.key === Enter) {
+              onBlur={(e) => UIValidRiskScoreCheck(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
                   UIValidRiskScoreCheck(e.target.value);
                 }
               }}
-            
-              MenuItem value=NRNRMenuItem
-              MenuItem value=LRLRMenuItem
-              MenuItem value=MRMRMenuItem
-              MenuItem value=HRHRMenuItem
-            TextField
-          Grid
+            >
+              <MenuItem value="NR">NR</MenuItem>
+              <MenuItem value="LR">LR</MenuItem>
+              <MenuItem value="MR">MR</MenuItem>
+              <MenuItem value="HR">HR</MenuItem>
+            </TextField>
+          </Grid>
 
 
-          { Row 3 Status, Created By }
-          Grid item xs={12} sm={6} md={6} lg={6}
-            TextField
+          {/* Row 3: Status, Created By */}
+          <Grid item xs={12} sm={6} md={6} lg={6}>
+            <TextField
               fullWidth
               select
-              label=Status
+              label="Status"
               value={status}
-              onChange={(e) = {
+              onChange={(e) => {
                 if (e.target.value) {
                   setStatus(e.target.value);
-                  setValidStatus({ validated true, error false })
+                  setValidStatus({ "validated": true, "error": false })
                 }
 
                 else {
-                  setValidStatus({ validated true, error true })
+                  setValidStatus({ "validated": true, "error": true })
                 }
               }}
-            
-              MenuItem value=ScheduledScheduledMenuItem
-              MenuItem value=In NetworkIn NetworkMenuItem
-              MenuItem value=CompletedCompletedMenuItem
-            TextField
-          Grid
+            >
+              <MenuItem value="Scheduled">Scheduled</MenuItem>
+              <MenuItem value="In Network">In Network</MenuItem>
+              <MenuItem value="Completed">Completed</MenuItem>
+            </TextField>
+          </Grid>
 
-          {
-            Grid item xs={12} sm={6} md={6} lg={6}
-              TextField
+          {/*
+            <Grid item xs={12} sm={6} md={6} lg={6}>
+              <TextField
                 fullWidth
-                label=Created By
-                name=createdAt
-                type=date
-                InputLabelProps={{ shrink true }}
+                label="Created By"
+                name="createdAt"
+                type="date"
+                InputLabelProps={{ shrink: true }}
                 inputProps={{
-                  max new Date().toISOString().split('T')[0]  Restricts to today's date
+                  max: new Date().toISOString().split('T')[0] // Restricts to today's date
                 }}
-                onChange={(e) = { setcreatedAt(e.target.value) }}
-              
-            Grid   }
+                onChange={(e) => { setcreatedAt(e.target.value) }}
+              />
+            </Grid>   */}
 
-          { Row 4 Location Fields }
-          Grid item xs={12} sm={6} md={6} lg={6}
-            TextField
+          {/* Row 4: Location Fields */}
+          <Grid item xs={12} sm={6} md={6} lg={6}>
+            <TextField
               fullWidth
-              label=Latitude
-              name=lat
-              type=number
+              label="Latitude"
+              name="lat"
+              type="number"
               value={lattitude}
               helperText={lattitudeHelptext}
               inputProps={{
-                min -90,
-                max 90
+                min: -90,
+                max: 90
               }}
-              onChange={(e) = {
+              onChange={(e) => {
                 const value = parseFloat(e.target.value);
-                if (isNaN(value)) { setisValidLattitude({ 'validated' true, 'error' true }); setLattitude(); setLattiitudeHelpText(Lattitude must be a number ); }
-                else if (value  -90  value  90) { setisValidLattitude({ 'validated' true, 'error' true }); setLattitude(); setLattiitudeHelpText(Lattitude must be greater than -90 and less than 90) }
-                else { setisValidLattitude({ 'validated' true, 'error' false }); setLattitude(value); setLattiitudeHelpText(null); }
+                if (isNaN(value)) { setisValidLattitude({ 'validated': true, 'error': true }); setLattitude(""); setLattiitudeHelpText("Lattitude must be a number "); }
+                else if (value < -90 || value > 90) { setisValidLattitude({ 'validated': true, 'error': true }); setLattitude(""); setLattiitudeHelpText("Lattitude must be greater than -90 and less than 90") }
+                else { setisValidLattitude({ 'validated': true, 'error': false }); setLattitude(value); setLattiitudeHelpText(null); }
               }}
-            
-          Grid
+            />
+          </Grid>
 
-          Grid item xs={12} sm={6} md={6} lg={6}
-            TextField
+          <Grid item xs={12} sm={6} md={6} lg={6}>
+            <TextField
               fullWidth
-              label=Longitude
-              name=longi
-              type=number
+              label="Longitude"
+              name="longi"
+              type="number"
               value={longitude}
               helperText={longitudeHelptext}
               inputProps={{
-                min -180,
-                max 180
+                min: -180,
+                max: 180
               }}
-              onChange={(e) = {
+              onChange={(e) => {
                 if (e.target.value) {
                   setLongitude(parseFloat(e.target.value));
                 }
 
                 else {
-                  setLongitude();
-                  setIsValidLongitude({ validated true, error true });
+                  setLongitude("");
+                  setIsValidLongitude({ "validated": true, "error": true });
                 }
 
 
               }}
 
-              onBlur={(e) = { UILongitudeValidation(e.target.value) }}
-              onKeyDown={(e) = {
-                if (e.key === Enter) {
+              onBlur={(e) => { UILongitudeValidation(e.target.value) }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
                   UILongitudeValidation(e.target.value);
                 }
               }}
-            
-          Grid
+            />
+          </Grid>
 
-          { Submit Button Row }
-          Grid item xs={12} sx={{ display 'flex', justifyContent 'center', mt 2 }}
-            Button
-              variant=contained
+          {/* Submit Button Row */}
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Button
+              variant="contained"
               disabled={!isButtonValid}
-              size=large
-              sx={{ minWidth 120 }}
+              size="large"
+              sx={{ minWidth: 120 }}
               onClick={handleFormSubmit}
-            
+            >
               Submit
-            Button
-          Grid
+            </Button>
+          </Grid>
 
-        Grid
+        </Grid>
 
-      Dialog
-      Grid
-        FormControl sx={{ m 1, width 300 }}
-          InputLabel id=multi-select-checkbox-labelOrganizationsInputLabel
-          Select
-            labelId=multi-select-checkbox-label
-            id=multi-select-checkbox
+      </Dialog>
+      <Grid>
+        <FormControl sx={{ m: 1, width: 300 }}>
+          <InputLabel id="multi-select-checkbox-label">Organizations</InputLabel>
+          <Select
+            labelId="multi-select-checkbox-label"
+            id="multi-select-checkbox"
             multiple
-            value={selectedItems}
-            onChange={handleChangeOrgSelector}
-            input={OutlinedInput label=Organizations }
-            renderValue={(selected) =
-              selected.map(item = items.find(i = i.id === item).name).join(, )
+            value={organizationSelectorList}
+            onChange={handleOrgOptions}
+            input={<OutlinedInput label="Organizations" />}
+            renderValue={(selected) =>
+              selected.join(",")
             }
-          
-            {items.map((item) = (
-              MenuItem key={item.id} value={item.id}
-                Checkbox checked={selectedItems.indexOf(item.id)  -1} 
-                ListItemText primary={item.name} 
-              MenuItem
+            MenuProps={OrgMenuProps}
+          >
+            {orgDetail.map((value) => (
+              <MenuItem key={value} value={value}>
+                <Checkbox checked={organizationSelectorList.includes(value)} />
+                <ListItemText primary={value} />
+              </MenuItem>
             ))}
-          Select
-        FormControl
+          </Select>
+        </FormControl>
 
-           Grid
-            FormControl sx={{ m 1, width 300 }}
-          InputLabel id=multi-select-checkbox-labelRisk CategoriesInputLabel
-          Select
-            labelId=multi-select-checkbox-label
-            id=multi-select-checkbox
+           <Grid>
+          <FormControl sx={{m:1,width:300}}>
+           <InputLabel id="risk-options-label">Risks</InputLabel>
+            <Select
             multiple
             value={riskSelectorList}
+            id="Risk-options-list"
+            labelId="risk-options-label"
             onChange={handleChangeRiskSelector}
-            input={OutlinedInput label=Risk Categories }
-            renderValue={(selected) =
-              selected.map(item = items.find(i = i.id === item).name).join(, )
+            renderValue={(items)=>items.join(',')}
+            MenuProps={RiskMenuProps}
+            input={<OutlinedInput label="Risks"/>}
+            >
+            {
+              RiskDetail.map((value)=>(
+                <MenuItem value={value} key={value}>
+                   <ListItemText primary={value} />
+                   <Checkbox checked={riskSelectorList.includes(value)} />
+                </MenuItem>
+                 ))
             }
-          
-            {items.map((item) = (
-              MenuItem key={item.id} value={item.id}
-                Checkbox checked={selectedItems.indexOf(item.id)  -1} 
-                ListItemText primary={item.name} 
-              MenuItem
-            ))}
-          Select
-        FormControl
-      Grid
+            </Select>
+          </FormControl>
+      </Grid>
+     
+     <Grid>
+       <FormControl sx={{width:300,m:1}}>
+        <InputLabel id="Status-list">Status</InputLabel>
+        <Select
+        multiple
+        id="Status-Selector"
+        labelId="Status-list"
+        value={statusSelectorList}
+        onChange={handleStatusChanges}
+        renderValue={(items)=>items.join(',')}
+        input={<OutlinedInput label="Status"/>}
+        MenuProps={StatusMenuProps}>
+        {
+         statusOptions.map((item)=>(
+            <MenuItem key={item} value={item}>
+             <ListItemText primary={item}/>
+             <Checkbox checked={statusSelectorList.includes(item)}/>
+            </MenuItem>
+          ))}
+        </Select>
+       </FormControl>
+     </Grid>
 
+  
+    <Grid>
+      <TextField
+      sx={{width:300}}
+      label="Search for an Id"
+      value={regexPattern}
+      onChange={(e)=>{
+        if(e.target.value)
+        {
+         setRegexPattern(e.target.value);
+        }
 
-
-
-
-
-
-
-
-
-
-      Grid
-      div style={{ height 100vh, width 100vw }} className=ag-theme-alpine
-        AgGridReact rowData={displayRecord} columnDefs={fields} masterDetail={true} detailCellRenderer={displayMap} 
-      div
+        else
+        {  
+          setRegexPattern("");
+        }
+      }}
+        
+      />
+    </Grid>
     
+      </Grid>
+      <div style={{ height: "100vh", width: "100vw" }} className="ag-theme-alpine">
+        <AgGridReact rowData={displayRecord} columnDefs={fields} masterDetail={true} detailCellRenderer={displayMap} />
+      </div>
+    </>
   )
 }
 
 
 
 
-
-  const UIValidRiskScoreCheck=(value)=
+/*
+  const UIValidRiskScoreCheck=(value)=>
    {
       let choice=value.toLowerCase();
-    if(choice==='lr'  choice==='mr'  choice==='hr'  choice==='nr')
+    if(choice==='lr' || choice==='mr' || choice==='hr' || choice==='nr')
     {
-      setValidRiskScore({ 'validated' true, 'error' false });
+      setValidRiskScore({ 'validated': true, 'error': false });
       }
 
     else
     {
-      setValidRiskScore({ 'validated' true, 'error' true });
+      setValidRiskScore({ 'validated': true, 'error': true });
       }
  
-   } 
- RENDER METHODS 
+   } */
+/* RENDER METHODS */
 function getInitialState() {
   var ans = {};
   $('.initialState dt').each(function () {
-    var key = $(this).parent().attr(id);
+    var key = $(this).parent().attr("id");
     var subKey = $(this).text();
     var subVal = $(this).next().text();
     if (_.isUndefined(key)) {
@@ -731,5 +945,5 @@ function renderClass(tagName, props, classDef) {
 }
 
 $(function () {
-  renderClass(dashboard, null, MyApp);
-})type your code her
+  renderClass("dashboard", null, MyApp);
+})//type your code her
