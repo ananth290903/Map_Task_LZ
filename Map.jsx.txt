@@ -1,4 +1,4 @@
-// Last Modified: 2025-09-15T05:13:45.611Z
+// Last Modified: 2025-09-15T13:39:39.359Z
 import ReactDOM from 'react-dom';
 import React, { useState, useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
@@ -7,9 +7,17 @@ import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Dialog from '@mui/material/Dialog';
-import { AgGridReact } from 'ag-grid-react';
+
+import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+
+// 2️⃣ Import AG Grid modules         
+import { ModuleRegistry } from "ag-grid-community";
+import { MasterDetailModule } from "ag-grid-enterprise";
+
+import { LicenseManager } from "ag-grid-enterprise";
+LicenseManager.setLicenseKey("Using_this_{AG_Grid}_Enterprise_key_{AG-058194}_in_excess_of_the_licence_granted_is_not_permitted___Please_report_misuse_to_legal@ag-grid.com___For_help_with_changing_this_key_please_contact_info@ag-grid.com___{LambdaZen,_Inc.}_is_granted_a_{Single_Application}_Developer_License_for_the_application_{Smart_Solutions_(Cold_Chain_Technology)}_only_for_{1}_Front-End_JavaScript_developer___All_Front-End_JavaScript_developers_working_on_{Smart_Solutions_(Cold_Chain_Technology)}_need_to_be_licensed___{Smart_Solutions_(Cold_Chain_Technology)}_has_been_granted_a_Deployment_License_Add-on_for_{1}_Production_Environment___This_key_works_with_{AG_Grid}_Enterprise_versions_released_before_{22_June_2025}____[v3]_[01]_MTc1MDU0NjgwMDAwMA==608ead4998a0fd46cb093a9d441c499c");
 
 import {
   FormControl,
@@ -20,7 +28,9 @@ import {
   OutlinedInput, // For a more visually distinct input
 } from '@mui/material';
 
-    
+// 4️⃣ Register the modules
+ModuleRegistry.registerModules([MasterDetailModule]);
+
 const MyApp = () => {
   const [isValidShippmentId, setValidShippmentId] = useState({ 'validated': false, 'error': false });
   const [isValidOrganization, setValidOrganization] = useState({ 'validated': false, 'error': false });
@@ -33,11 +43,11 @@ const MyApp = () => {
   const [lattitudeHelptext, setLattiitudeHelpText] = useState(null);
   const [shipmentIdHelperText, setShipmentIdHelperText] = useState(null);
   const [isValidDate, setValidDate] = useState({ 'validated': false, 'error': false })
-  const[riskSelectorList,setRiskSelectorList]=useState([]);
-  const[statusSelectorList,setStatusSelectorList]=useState([]);
-  const[organizationSelectorList,setOrganizationSelectorList]=useState([]);
-  const[regexPattern,setRegexPattern]=useState("");
-
+  const [riskSelectorList, setRiskSelectorList] = useState([]);
+  const [statusSelectorList, setStatusSelectorList] = useState([]);
+  const [organizationSelectorList, setOrganizationSelectorList] = useState([]);
+  const [regexPattern, setRegexPattern] = useState("");
+  const [agGridTableValues, setAgGridTableValues] = useState([]);
 
   {/*
 
@@ -97,7 +107,8 @@ const MyApp = () => {
   const [maprecords, setMapRecords] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [displayRecord, setDisplayRecord] = useState([]);
-  const[riskoptions,setRiskOptions]=useState("");
+  const [tableValues, setTableValues] = useState([]);
+  const [riskoptions, setRiskOptions] = useState("");
   useEffect(() => {
     if (!isValidDate.error && isValidDate.validated && isValidOrganization.validated && !isValidOrganization.error && isValidShippmentId.validated && !isValidShippmentId.error && !isValidLattitude.error && isValidLattitude.validated && !isValidLongitude.error && isValidLongitude.validated && isValidStatus.validated && !isValidStatus.error && isValidRiskScore.validated && !isValidRiskScore.error) {
       setIsButtonValid(true);
@@ -107,150 +118,159 @@ const MyApp = () => {
       setIsButtonValid(false);
     }
   }, [isValidShippmentId, isValidLattitude, isValidRiskScore, isValidOrganization, isValidStatus, isValidDate, isValidLongitude])
- 
-
-/*
- useEffect(() => {
-    if (selectedItems.length !== 0) {
-      const filtered = records.filter((el) =>
-        selectedItems.includes(el.org.toLowerCase())
-      );
-      setDisplayRecord(filtered);
-    } else {
-      setDisplayRecord(records);
-    }
-  }, [selectedItems, records]);
 
 
-*/
-
-useEffect(() => {
-  let filtered = [...records];
-
-  // filter by status
-  if (statusSelectorList.length !== 0) {
-    filtered = filtered.filter((item) =>
-      statusSelectorList.includes(item.status)
-    );
-  }
-
-  // filter by risk
-  if (riskSelectorList.length !== 0) {
-    filtered = filtered.filter((item) =>
-      riskSelectorList.includes(item.risk)
-    );
-  }
-
-  // filter by org
-  if (organizationSelectorList.length !== 0) {
-    filtered = filtered.filter((item) =>
-    organizationSelectorList.includes(item.org)
-    );
-  }
-
-  if(typeof(regexPattern)==="string" && regexPattern.trim() )
-  {
-    try
-    {
-      const regex=new RegExp(regexPattern.trim(),"i");
-       filtered=filtered.filter((item)=>regex.test(item.shipmentId));
-    }
-
-    catch
-    {
-      console.log("No pair found");
-    }
-  }
-  setDisplayRecord(filtered);
-}, [statusSelectorList, riskSelectorList,organizationSelectorList,records,regexPattern]);
-
-
-/*
-  const searchforRegex=(value)=>
-  {
-    if(value==="")
-    {
-      return rec;
-    }
-    value=value.trim();
-    try
-    {
-     const rec=records;
-     const regex=new RegExp(value,"i");
-
-
-    }
-
-    catch
-    {
-       return rec;
-    }
-
-  }  */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const RiskDetail=['NR','LR','MR','HR'];
-  const orgDetail=['Moderna','Paraxel','Pfizer','UVA Health Pharmacy Services','VPL Rx','DuPont'];
+  /*
+   useEffect(() => {
+      if (selectedItems.length !== 0) {
+        const filtered = records.filter((el) =>
+          selectedItems.includes(el.org.toLowerCase())
+        );
+        setDisplayRecord(filtered);
+      } else {
+        setDisplayRecord(records);
+      }
+    }, [selectedItems, records]);
   
-  const RiskMenuProps={
-    PaperProps:{
-      style:{
-      maxHeight:48*4.4+10,
-      width:230}
+  
+  */
+
+  useEffect(() => {
+    let filtered = [...records];
+
+    // filter by status
+    if (statusSelectorList.length !== 0) {
+      filtered = filtered.filter((item) =>
+        statusSelectorList.includes(item.status)
+      );
     }
-  }
 
-   const OrgMenuProps={
-    PaperProps:{
-      style:{
-      maxHeight:48*7+10,
-      width:230}
+    // filter by risk
+    if (riskSelectorList.length !== 0) {
+      filtered = filtered.filter((item) =>
+        riskSelectorList.includes(item.risk)
+      );
     }
-  }
 
-  const HandleRiskOptions=(event)=>
-  {
-     const{target:{riskValue}}=event;
-     setRiskOptions(typeof(riskValue)==='string'?riskValue.split(','):riskValue);
-  }
+    // filter by org
+    if (organizationSelectorList.length !== 0) {
+      filtered = filtered.filter((item) =>
+        organizationSelectorList.includes(item.org)
+      );
+    }
 
-    const handleOrgOptions=(event)=>
-  {
-     const{target:{value}}=event;
-     setOrganizationSelectorList(typeof(value)==='string'?value.split(','):value);
-  }
- 
-  const StatusMenuProps={
-    PaperProps:{
-      style:{
-        maxHeight:4.4*48+10,
-        width:230
+    if (typeof (regexPattern) === "string" && regexPattern.trim()) {
+      try {
+        const regex = new RegExp(regexPattern.trim(), "i");
+        filtered = filtered.filter((item) => regex.test(item.shipmentId));
+      }
+
+      catch
+      {
+        console.log("No pair found");
+      }
+    }
+    setDisplayRecord(filtered);
+  }, [statusSelectorList, riskSelectorList, organizationSelectorList, records, regexPattern]);
+
+
+
+
+  useEffect(() => {
+    const nr = displayRecord.map((item) => ({ ...item, isRowMaster: true }))
+    setAgGridTableValues(nr);
+    console.log("**********************");
+    setTimeout(() => {
+      console.log(nr);
+    }, 3000);
+    console.log("**********************");
+  }, [displayRecord])
+
+  /*
+    const searchforRegex=(value)=>
+    {
+      if(value==="")
+      {
+        return rec;
+      }
+      value=value.trim();
+      try
+      {
+       const rec=records;
+       const regex=new RegExp(value,"i");
+  
+  
+      }
+  
+      catch
+      {
+         return rec;
+      }
+  
+    }  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const RiskDetail = ['NR', 'LR', 'MR', 'HR'];
+  const orgDetail = ['Moderna', 'Paraxel', 'Pfizer', 'UVA Health Pharmacy Services', 'VPL Rx', 'DuPont'];
+
+  const RiskMenuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: 48 * 4.4 + 10,
+        width: 230
       }
     }
   }
 
-  const handleStatusChanges=(event)=>
-  {
-     const{target:{value}}=event;
-     setStatusSelectorList(typeof(value)==='string'?value.split(','):value);
+  const OrgMenuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: 48 * 7 + 10,
+        width: 230
+      }
+    }
+  }
+
+  const HandleRiskOptions = (event) => {
+    const { target: { riskValue } } = event;
+    setRiskOptions(typeof (riskValue) === 'string' ? riskValue.split(',') : riskValue);
+  }
+
+  const handleOrgOptions = (event) => {
+    const { target: { value } } = event;
+    setOrganizationSelectorList(typeof (value) === 'string' ? value.split(',') : value);
+  }
+
+  const StatusMenuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: 4.4 * 48 + 10,
+        width: 230
+      }
+    }
+  }
+
+  const handleStatusChanges = (event) => {
+    const { target: { value } } = event;
+    setStatusSelectorList(typeof (value) === 'string' ? value.split(',') : value);
 
   }
 
 
-  const statusOptions=['Scheduled','Completed','In Network'];
+  const statusOptions = ['Scheduled', 'Completed', 'In Network'];
 
 
   const getShippingTime = (date) => {
@@ -262,34 +282,27 @@ useEffect(() => {
   }
 
   const displayMap = (props) => {
+    console.log("display Map log");
     return (
-      <div
-        style={{
-          padding: "10px",
-          border: "2px solid black"
-        }}
-      >
-        <p>{props.data.shipmentId}</p>
+      <div style={{ padding: "10px", border: "2px solid black" }}>
+        <p>Shipment ID: {props.data.shipmentId}</p>
+        <p>Status: {props.data.status}</p>
       </div>
-    )
+    );
+  };
 
-  }
+  const mutliDatePicker = (startdate, enddate) => {
+    var reco_local = displayRecord;
+    const starttime = new Date(starttime).getTime();
+    const enddtime = new Date(enddate).getTime();
+    if (reco_local.length != 0) {
+      reco_local.filter((item) => item.date >= startdate && item.date <= enddate);
+      setDisplayRecord(reco_local);
+    }
 
-  const mutliDatePicker=(startdate,enddate)=>
-  {
-    var reco_local=displayRecord;
-     const starttime=new Date(starttime).getTime();
-     const enddtime=new Date(enddate).getTime();
-     if(reco_local.length!=0)
-     {
-       reco_local.filter((item)=>item.date>=startdate && item.date<=enddate);
-       setDisplayRecord(reco_local);
-     }
-   
-     else
-     {
-      
-     }
+    else {
+
+    }
 
   }
 
@@ -466,7 +479,7 @@ useEffect(() => {
       done: (r) => {
         console.log(r);
         let tablerecords = r.map((item) => ({ "shipmentId": item.shipmentId, "org": item.org, "riskScore": item.riskScore, "status": item.status, isRowMaster: true }));
-        let fullRecords=r.map((item) => ({ "shipmentId": item.shipmentId, "org": item.org, "riskScore": item.riskScore, "status": item.status,"shipDate":item.shipDate,"lattitude":item.lattitude,"longitude":item.longitude }));
+        let fullRecords = r.map((item) => ({ "shipmentId": item.shipmentId, "org": item.org, "riskScore": item.riskScore, "status": item.status, "shipDate": item.shipDate, "lattitude": item.lattitude, "longitude": item.longitude }));
         setRecords(fullRecords);
         console.log(fullRecords);
         setDisplayRecord(tablerecords);
@@ -537,7 +550,7 @@ useEffect(() => {
     { id: 'uva health pharmacy services', name: 'UVA Health Pharmacy Services' },
     { id: 'vpl rx', name: 'VPL Rx' },
     { id: 'dupont', name: 'DuPont' },
-     { id: 'pfizer', name: 'Pfizer' }
+    { id: 'pfizer', name: 'Pfizer' }
   ];
 
   const handleChangeOrgSelector = (event) => {
@@ -551,7 +564,7 @@ useEffect(() => {
   };
 
 
-   const Riskitems = [
+  const Riskitems = [
     { id: 'LR', name: 'Low Risk' },
     { id: 'HR', name: 'High Risk' },
     { id: 'MR', name: 'Moderate Risk' },
@@ -821,78 +834,152 @@ useEffect(() => {
           </Select>
         </FormControl>
 
-           <Grid>
-          <FormControl sx={{m:1,width:300}}>
-           <InputLabel id="risk-options-label">Risks</InputLabel>
+        <Grid>
+          <FormControl sx={{ m: 1, width: 300 }}>
+            <InputLabel id="risk-options-label">Risks</InputLabel>
             <Select
-            multiple
-            value={riskSelectorList}
-            id="Risk-options-list"
-            labelId="risk-options-label"
-            onChange={handleChangeRiskSelector}
-            renderValue={(items)=>items.join(',')}
-            MenuProps={RiskMenuProps}
-            input={<OutlinedInput label="Risks"/>}
+              multiple
+              value={riskSelectorList}
+              id="Risk-options-list"
+              labelId="risk-options-label"
+              onChange={handleChangeRiskSelector}
+              renderValue={(items) => items.join(',')}
+              MenuProps={RiskMenuProps}
+              input={<OutlinedInput label="Risks" />}
             >
-            {
-              RiskDetail.map((value)=>(
-                <MenuItem value={value} key={value}>
-                   <ListItemText primary={value} />
-                   <Checkbox checked={riskSelectorList.includes(value)} />
-                </MenuItem>
-                 ))
-            }
+              {
+                RiskDetail.map((value) => (
+                  <MenuItem value={value} key={value}>
+                    <ListItemText primary={value} />
+                    <Checkbox checked={riskSelectorList.includes(value)} />
+                  </MenuItem>
+                ))
+              }
             </Select>
           </FormControl>
-      </Grid>
-     
-     <Grid>
-       <FormControl sx={{width:300,m:1}}>
-        <InputLabel id="Status-list">Status</InputLabel>
-        <Select
-        multiple
-        id="Status-Selector"
-        labelId="Status-list"
-        value={statusSelectorList}
-        onChange={handleStatusChanges}
-        renderValue={(items)=>items.join(',')}
-        input={<OutlinedInput label="Status"/>}
-        MenuProps={StatusMenuProps}>
-        {
-         statusOptions.map((item)=>(
-            <MenuItem key={item} value={item}>
-             <ListItemText primary={item}/>
-             <Checkbox checked={statusSelectorList.includes(item)}/>
-            </MenuItem>
-          ))}
-        </Select>
-       </FormControl>
-     </Grid>
+        </Grid>
 
-  
-    <Grid>
-      <TextField
-      sx={{width:300}}
-      label="Search for an Id"
-      value={regexPattern}
-      onChange={(e)=>{
-        if(e.target.value)
-        {
-         setRegexPattern(e.target.value);
-        }
+        <Grid>
+          <FormControl sx={{ width: 300, m: 1 }}>
+            <InputLabel id="Status-list">Status</InputLabel>
+            <Select
+              multiple
+              id="Status-Selector"
+              labelId="Status-list"
+              value={statusSelectorList}
+              onChange={handleStatusChanges}
+              renderValue={(items) => items.join(',')}
+              input={<OutlinedInput label="Status" />}
+              MenuProps={StatusMenuProps}>
+              {
+                statusOptions.map((item) => (
+                  <MenuItem key={item} value={item}>
+                    <ListItemText primary={item} />
+                    <Checkbox checked={statusSelectorList.includes(item)} />
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
+        </Grid>
 
-        else
-        {  
-          setRegexPattern("");
-        }
-      }}
-        
-      />
-    </Grid>
-    
+
+        <Grid>
+          <TextField
+            sx={{ width: 300 }}
+            label="Search for an Id"
+            value={regexPattern}
+            onChange={(e) => {
+              if (e.target.value) {
+                setRegexPattern(e.target.value);
+              }
+
+              else {
+                setRegexPattern("");
+              }
+            }}
+
+          />
+
+
+        </Grid>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       </Grid>
       <div style={{ height: "100vh", width: "100vw" }} className="ag-theme-alpine">
-        <AgGridReact rowData={displayRecord} columnDefs={fields} masterDetail={true} detailCellRenderer={displayMap} />
+        <AgGridReact rowData={agGridTableValues} columnDefs={fields} masterDetail={true} agDetailCellRenderer={displayMap} />
       </div>
     </>
   )
