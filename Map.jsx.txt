@@ -1,4 +1,4 @@
-// Last Modified: 2025-09-15T14:16:30.732Z
+// Last Modified: 2025-09-17T13:39:12.121Z
 import ReactDOM from 'react-dom';
 import React, { useState, useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
@@ -19,6 +19,8 @@ import { MasterDetailModule } from "ag-grid-enterprise";
 import { LicenseManager } from "ag-grid-enterprise";
 LicenseManager.setLicenseKey("Using_this_{AG_Grid}_Enterprise_key_{AG-058194}_in_excess_of_the_licence_granted_is_not_permitted___Please_report_misuse_to_legal@ag-grid.com___For_help_with_changing_this_key_please_contact_info@ag-grid.com___{LambdaZen,_Inc.}_is_granted_a_{Single_Application}_Developer_License_for_the_application_{Smart_Solutions_(Cold_Chain_Technology)}_only_for_{1}_Front-End_JavaScript_developer___All_Front-End_JavaScript_developers_working_on_{Smart_Solutions_(Cold_Chain_Technology)}_need_to_be_licensed___{Smart_Solutions_(Cold_Chain_Technology)}_has_been_granted_a_Deployment_License_Add-on_for_{1}_Production_Environment___This_key_works_with_{AG_Grid}_Enterprise_versions_released_before_{22_June_2025}____[v3]_[01]_MTc1MDU0NjgwMDAwMA==608ead4998a0fd46cb093a9d441c499c");
 
+import { Wrapper } from "@googlemaps/react-wrapper";
+
 import {
   FormControl,
   InputLabel,
@@ -31,26 +33,76 @@ import {
 // 4️⃣ Register the modules
 ModuleRegistry.registerModules([MasterDetailModule]);
 
+
+const GoogleMapComponent = ({ latitude, longitude }) => {
+  const mapRef = React.useRef(null);  //Declare a mapRef variable for tracking div to setup map. Inital value null
+  const [map, setMap] = React.useState(null); //Declared a state variable 
+  const [ready, setReady] = React.useState(false); //Declared a state called ready.Setup Ready for endering.
+
+
+  React.useEffect(() => {  //First UseEffect  
+    if (!ready || !mapRef.current || !window.google || map) return; //Do not proceed with this useEffecr if ready is false OR mapRef.current is null OR window.google is null OR when map is defined)
+    console.log("In the first UseEffect");
+    const pos = { lat: parseFloat(latitude), lng: parseFloat(longitude) }; // Position is defined using the lattitude and longitude values.
+    const m = new window.google.maps.Map(mapRef.current, {
+      center: pos,
+      zoom: 15,
+      mapTypeId: "roadmap",
+    }); //Creating a Google map object with input coordinates,with suitable zoom and maptype and passing mapRef.current(ref of div where map to set)
+    setMap(m); //Storing the content of map to state "map"
+  }, [ready, map]); //Dependenices ready and map when they change,useEffect is triggered.
+
+  React.useEffect(() => {  //2nd useEffect triggered when the lattitude and longitude as well as the map changes.
+    //First useEffect does'nt account to change in lattitude and longitude values
+    if (!map) return; //If map is null, exit from useEffect
+    console.log("In the second UseEffect");
+    const pos = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
+    map.setCenter(pos); //Position the google map focussing on the marker
+    new window.google.maps.Marker({ position: pos, map: map }); //Setting the map marker on this speciifc loc
+  }, [latitude, longitude, map]);
+  return (
+    <Wrapper //Returns GOogle MAp Wrapper for render
+      apiKey="AIzaSyDXekPtnvpUFKDa-ZwFBrb7ExAsfeDbkiA" //Google MAp access using this APi key
+      render={(status) => <StatusBridge status={status} onReady={setReady} />}  //Passes a prop render. render accepts a function such function takes a paramter status and returns a component StatusBridge 
+    //Parameter 
+    >
+      {ready && <div ref={mapRef} style={{ height: 600, width: "100vw" }} />}
+    </Wrapper>
+  );
+}
+
+
+const StatusBridge = ({ status, onReady }) => { //Receives two props: status and onReady
+  React.useEffect(() => { // Triggers when status or onReady Changes
+    if (status === "SUCCESS") onReady(true); // If the status is SUCCESS, onReady is called with parameter true.
+  }, [status, onReady]);
+
+  if (status === "LOADING") return <div>Loading map</div>; // If status is loading, return "Loading map" string
+  if (status === "FAILURE") return <div>Error loading map</div>; // If status is failure, return error string.
+  return null; // SUCCESS → children render // if Status is other tahn LOADING or FAILURE (Eg: SUCCESS) null is returned 
+};
+
 const MyApp = () => {
-  const [isValidShippmentId, setValidShippmentId] = useState({ 'validated': false, 'error': false });
-  const [isValidOrganization, setValidOrganization] = useState({ 'validated': false, 'error': false });
-  const [isValidRiskScore, setValidRiskScore] = useState({ 'validated': false, 'error': false });
-  const [isValidStatus, setValidStatus] = useState({ 'validated': false, 'error': false });
-  const [isButtonValid, setIsButtonValid] = useState(false);
-  const [isValidLattitude, setisValidLattitude] = useState({ 'validated': false, 'error': false });
-  const [isValidLongitude, setIsValidLongitude] = useState({ 'validated': false, 'error': false });
-  const [longitudeHelptext, setLongitudeHelpText] = useState(null);
-  const [lattitudeHelptext, setLattiitudeHelpText] = useState(null);
-  const [shipmentIdHelperText, setShipmentIdHelperText] = useState(null);
-  const [isValidDate, setValidDate] = useState({ 'validated': false, 'error': false })
-  const [riskSelectorList, setRiskSelectorList] = useState([]);
-  const [statusSelectorList, setStatusSelectorList] = useState([]);
-  const [organizationSelectorList, setOrganizationSelectorList] = useState([]);
-  const [regexPattern, setRegexPattern] = useState("");
-  const [agGridTableValues, setAgGridTableValues] = useState([]);
+  const [isValidShippmentId, setValidShippmentId] = React.useState({ 'validated': false, 'error': false });
+  const [isValidOrganization, setValidOrganization] = React.useState({ 'validated': false, 'error': false });
+  const [isValidRiskScore, setValidRiskScore] = React.useState({ 'validated': false, 'error': false });
+  const [isValidStatus, setValidStatus] = React.useState({ 'validated': false, 'error': false });
+  const [isButtonValid, setIsButtonValid] = React.useState(false);
+  const [isValidLattitude, setisValidLattitude] = React.useState({ 'validated': false, 'error': false });
+  const [isValidLongitude, setIsValidLongitude] = React.useState({ 'validated': false, 'error': false });
+  const [longitudeHelptext, setLongitudeHelpText] = React.useState(null);
+  const [lattitudeHelptext, setLattiitudeHelpText] = React.useState(null);
+  const [shipmentIdHelperText, setShipmentIdHelperText] = React.useState(null);
+  const [isValidDate, setValidDate] = React.useState({ 'validated': false, 'error': false })
+  const [riskSelectorList, setRiskSelectorList] = React.useState([]);
+  const [statusSelectorList, setStatusSelectorList] = React.useState([]);
+  const [organizationSelectorList, setOrganizationSelectorList] = React.useState([]);
+  const [regexPattern, setRegexPattern] = React.useState("");
+  const [agGridTableValues, setAgGridTableValues] = React.useState([]);
 
+  const [startdate, setStartDate] = React.useState("");
+  const [enddate, setEndDate] = React.useState("");
 
-  
 
   {/*
 
@@ -97,22 +149,22 @@ const MyApp = () => {
   
   */}
 
-  const [fields, setFields] = useState([]);
-  const [shipmentId, setShipmentId] = useState("");
-  const [org, setOrg] = useState("");
-  const [date, setDate] = useState("");
-  const [riskScore, setRiskScore] = useState("");
-  const [status, setStatus] = useState("");
-  const [createdAt, setcreatedAt] = useState("");
-  const [lattitude, setLattitude] = useState(null);
-  const [longitude, setLongitude] = useState(null);
-  const [records, setRecords] = useState([]);
-  const [maprecords, setMapRecords] = useState([]);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [displayRecord, setDisplayRecord] = useState([]);
-  const [tableValues, setTableValues] = useState([]);
-  const [riskoptions, setRiskOptions] = useState("");
-  useEffect(() => {
+  const [fields, setFields] = React.useState([]);
+  const [shipmentId, setShipmentId] = React.useState("");
+  const [org, setOrg] = React.useState("");
+  const [date, setDate] = React.useState("");
+  const [riskScore, setRiskScore] = React.useState("");
+  const [status, setStatus] = React.useState("");
+  const [createdAt, setcreatedAt] = React.useState("");
+  const [lattitude, setLattitude] = React.useState(null);
+  const [longitude, setLongitude] = React.useState(null);
+  const [records, setRecords] = React.useState([]);
+  const [maprecords, setMapRecords] = React.useState([]);
+  const [selectedItems, setSelectedItems] = React.useState([]);
+  const [displayRecord, setDisplayRecord] = React.useState([]);
+  const [tableValues, setTableValues] = React.useState([]);
+  const [riskoptions, setRiskOptions] = React.useState("");
+  React.useEffect(() => {
     if (!isValidDate.error && isValidDate.validated && isValidOrganization.validated && !isValidOrganization.error && isValidShippmentId.validated && !isValidShippmentId.error && !isValidLattitude.error && isValidLattitude.validated && !isValidLongitude.error && isValidLongitude.validated && isValidStatus.validated && !isValidStatus.error && isValidRiskScore.validated && !isValidRiskScore.error) {
       setIsButtonValid(true);
     }
@@ -124,7 +176,7 @@ const MyApp = () => {
 
 
   /*
-   useEffect(() => {
+   React.useEffect(() => {
       if (selectedItems.length !== 0) {
         const filtered = records.filter((el) =>
           selectedItems.includes(el.org.toLowerCase())
@@ -138,7 +190,7 @@ const MyApp = () => {
   
   */
 
-  useEffect(() => {
+  React.useEffect(() => {
     let filtered = [...records];
 
     // filter by status
@@ -174,15 +226,42 @@ const MyApp = () => {
       }
     }
     setDisplayRecord(filtered);
-  }, [statusSelectorList, riskSelectorList, organizationSelectorList, records, regexPattern]);
+
+    if (startdate && enddate) {
+      const st = new Date(startdate).getTime();
+      const et = new Date(enddate).getTime();
+
+      if (st < et) {
+        // Filter the data based on date range
+        filtered = filtered.filter((item) => {
+          // Find the corresponding record using shipmentId
+          const matchingRecord = records.find((record) => record.shipmentId === item.shipmentId);
+
+          if (matchingRecord && matchingRecord.shipDate) {
+            const recordTime = matchingRecord.shipDate;
+            return recordTime >= st && recordTime <= et;
+          }
+
+          return false; // Exclude items without matching records or dates
+        });
+
+        // Use dateFilteredResults for your further processing
+        setDisplayRecord(filtered);
+      }
+    }
+
+
+
+  }
+    , [statusSelectorList, riskSelectorList, organizationSelectorList, records, regexPattern, startdate, enddate]);
 
 
 
 
-  useEffect(() => {
+  React.useEffect(() => {
     const nr = displayRecord.map((item) => ({ ...item, isRowMaster: true }))
     setAgGridTableValues(nr);
-    console.log("Ag grid Table value",nr);
+    console.log("Ag grid Table value", nr);
     // console.log("**********************"); 
     // setTimeout(() => {
     //   console.log(nr);
@@ -202,28 +281,16 @@ const MyApp = () => {
       {
        const rec=records;
        const regex=new RegExp(value,"i");
-  
-  
+   
+   
       }
-  
+   
       catch
       {
          return rec;
       }
-  
+   
     }  */
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -287,6 +354,7 @@ const MyApp = () => {
 
   const displayMap = (props) => {
     console.log("display Map log");
+    //<MyMap latitude={40.6892} longitude={-74.0445} />
     return (
       <div style={{ padding: "10px", border: "2px solid black" }}>
         <p>Shipment ID: {props.data.shipmentId}</p>
@@ -429,14 +497,14 @@ const MyApp = () => {
     console.log("Submitted Data:", payload);
     setisDialogueValid(false);
     {/*
-  const [shipmentId, setShipmentId] = useState("");
-  const [org, setOrg] = useState("");
-  const [date, setDate] = useState("");
-  const [riskScore, setRiskScore] = useState("");
-  const [status, setStatus] = useState("");
-  const [createdAt, setcreatedAt] = useState("");
-  const [lattitude, setLattitude] = useState(0);
-  const [longitude, setLongitude] = useState(0);   */}
+  const [shipmentId, setShipmentId] = React.useState("");
+  const [org, setOrg] = React.useState("");
+  const [date, setDate] = React.useState("");
+  const [riskScore, setRiskScore] = React.useState("");
+  const [status, setStatus] = React.useState("");
+  const [createdAt, setcreatedAt] = React.useState("");
+  const [lattitude, setLattitude] = React.useState(0);
+  const [longitude, setLongitude] = React.useState(0);   */}
 
     $cjs.concept({
       action: "CREATE",
@@ -472,8 +540,8 @@ const MyApp = () => {
 
 
 
-  useEffect(() => { getTableFields(); }, []);
-  useEffect(() => { fetchRecords(); }, []);
+  React.useEffect(() => { getTableFields(); }, []);
+  React.useEffect(() => { fetchRecords(); }, []);
 
 
   const fetchRecords = () => {
@@ -524,8 +592,8 @@ const MyApp = () => {
 
   }
 
-  const [isDialogueValid, setisDialogueValid] = useState(false);
-  const buttonRef = useRef(null);
+  const [isDialogueValid, setisDialogueValid] = React.useState(false);
+  const buttonRef = React.useRef(null);
 
 
 
@@ -585,13 +653,297 @@ const MyApp = () => {
     );
   };
 
+  {/*
+  function MyMap({ latitude, longitude,self=React}) {
+    const [pos, setPos] = React.useState({});
+    const position = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
+    React.useEffect(() => {
+      console.log("Running React.useEffect No.1");
+      setPos({ lat: parseFloat(latitude), lng: parseFloat(longitude) });
+    }, [latitude, longitude]);
 
-  return (
+    const mapRef = React.useRef(null); // <-- this was missing
+    const [mapInstance, setMapInstance] = React.useState(null);
+    React.useEffect(() => {
+      console.log("Running React.useEffect No.2");
+      if (mapRef.current && window.google) {
+        // Create the map in your existing div
+        const map = new window.google.maps.Map(mapRef.current, {
+          center: pos,
+          zoom: 15,
+          mapTypeId: "roadmap",
+        });
+
+        // Add a marker at the position
+        new window.google.maps.Marker({
+          position: pos,
+          map: map,
+          title: "Thiruvananthapuram, Kerala",
+        });
+      }
+    }, [latitude, longitude, position, mapRef]);
+    return (
+      <Wrapper
+        apiKey="AIzaSyDXekPtnvpUFKDa-ZwFBrb7ExAsfeDbkiA"
+        render={(status) => {
+          if (status === "LOADING") return <div>Loading map...</div>;
+          if (status === "FAILURE") return <div>Error loading map</div>;
+          return null;
+        }}
+      >
+        <div
+          ref={mapRef}
+          style={{ height: "600px", width: "100vw", border: "1px solid" }}
+        >
+          {/* Google Maps will render inside this div *
+        </div>
+      </Wrapper>
+    );
+  }   */}
+
+  {/*
+  function GoogleMapComponent({ latitude, longitude }) {
+    const [pos, setPos] = React.useState({});
+    const mapRef = React.useRef(null);
+    const [mapInstance, setMapInstance] = React.useState(null);
+
+    React.useEffect(() => {
+      console.log("Running React.useEffect No.1");
+      setPos({ lat: parseFloat(latitude), lng: parseFloat(longitude) });
+    }, [latitude, longitude]);
+
+    React.useEffect(() => {
+      console.log("Running React.useEffect No.2");
+      if (mapRef.current && window.google && pos.lat && pos.lng) {
+        // Create the map in your existing div
+        const map = new window.google.maps.Map(mapRef.current, {
+          center: pos,
+          zoom: 15,
+          mapTypeId: "roadmap",
+        });
+
+        // Add a marker at the position
+        new window.google.maps.Marker({
+          position: pos,
+          map: map,
+          title: "Thiruvananthapuram, Kerala",
+        });
+
+        setMapInstance(map);
+      }
+    }, [pos]);
+
+    <Wrapper
+      apiKey="AIzaSyDXekPtnvpUFKDa-ZwFBrb7ExAsfeDbkiA"
+      render={(status) => {
+        if (status === "LOADING") return <div>Loading map...</div>;
+        if (status === "FAILURE") return <div>Error loading map</div>;
+        return null;
+      }}
+    >
+      <div
+        ref={mapRef}
+        style={{ height: "600px", width: "100vw", border: "1px solid" }}
+      >
+        {/* Google Maps will render inside this div 
+    </div>
+  </Wrapper>   ignore wrapper
+
+    return (
+      null
+    );
+  }  
+
+  function MyMap({ latitude, longitude }) {
+    return (
+      <GoogleMapComponent latitude={latitude} longitude={longitude} />
+    );
+  }   */}
+
+
+  return(
     <>
-      <h1>Shipment Tracking</h1>
-      <Grid sx={{ marginLeft: "55vw", marginBottom: "1vh" }}>
-        <Button ref={buttonRef} onClick={handleClick} variant="contained" color="primary" sx={{ padding: '10px 20px' }} >Add an order</Button>
+      <Grid sx={{ marginLeft: "37vw" }}>
+        <h1>Shipment Tracking</h1>
       </Grid>
+      <Grid sx={{ display: "flex", flexDirection: "row" }}>
+        <Grid>
+          <TextField
+            sx={{ width: 300, m: 1 }}
+            label="Search for an Id"
+            value={regexPattern}
+            onChange={(e) => {
+              if (e.target.value) {
+                setRegexPattern(e.target.value);
+              }
+
+              else {
+                setRegexPattern("");
+              }
+            }}
+
+          />
+
+
+        </Grid>
+
+
+        <Grid>
+          <FormControl sx={{ m: 1, width: 300 }}>
+            <InputLabel id="multi-select-checkbox-label">Organizations</InputLabel>
+            <Select
+              labelId="multi-select-checkbox-label"
+              id="multi-select-checkbox"
+              multiple
+              value={organizationSelectorList}
+              onChange={handleOrgOptions}
+              input={<OutlinedInput label="Organizations" />}
+              renderValue={(selected) =>
+                selected.join(",")
+              }
+              MenuProps={OrgMenuProps}
+            >
+              {orgDetail.map((value) => (
+                <MenuItem key={value} value={value}>
+                  <Checkbox checked={organizationSelectorList.includes(value)} />
+                  <ListItemText primary={value} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+
+
+        <Grid>
+          <FormControl sx={{ m: 1, width: 300 }}>
+            <InputLabel id="risk-options-label">Risks</InputLabel>
+            <Select
+              multiple
+              value={riskSelectorList}
+              id="Risk-options-list"
+              labelId="risk-options-label"
+              onChange={handleChangeRiskSelector}
+              renderValue={(items) => items.join(',')}
+              MenuProps={RiskMenuProps}
+              input={<OutlinedInput label="Risks" />}
+            >
+              {
+                RiskDetail.map((value) => (
+                  <MenuItem value={value} key={value}>
+                    <ListItemText primary={value} />
+                    <Checkbox checked={riskSelectorList.includes(value)} />
+                  </MenuItem>
+                ))
+              }
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid>
+          <FormControl sx={{ width: 300, m: 1 }}>
+            <InputLabel id="Status-list">Status</InputLabel>
+            <Select
+              multiple
+              id="Status-Selector"
+              labelId="Status-list"
+              value={statusSelectorList}
+              onChange={handleStatusChanges}
+              renderValue={(items) => items.join(',')}
+              input={<OutlinedInput label="Status" />}
+              MenuProps={StatusMenuProps}>
+              {
+                statusOptions.map((item) => (
+                  <MenuItem key={item} value={item}>
+                    <ListItemText primary={item} />
+                    <Checkbox checked={statusSelectorList.includes(item)} />
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
+        </Grid>
+
+
+
+        <Grid>
+
+          <Grid sx={{ display: "flex", gap: "3vw" }}>
+            <Grid>
+              <TextField label="Start Date"
+                fullWidth
+                name="StartDate"
+                type="date"
+                sx={{ width: 300, m: 1 }}
+                inputProps={{
+                  max: enddate ? enddate : new Date().toISOString().split("T")[0]
+                  // Restricts to today's date if no enddate
+                }}
+                value={startdate}
+                InputLabelProps={{ shrink: true }}
+                onChange={
+                  (e) => {
+                    const newValue = e.target.value;
+                    //console.log("New date value:", newValue); // Fixed: log the actual new value
+                    if (newValue) {
+                      setStartDate(newValue);
+                    }
+
+                    else {
+                      setStartDate('');
+                    }
+
+                  }
+                }
+              />
+            </Grid>
+          </Grid>
+
+
+
+          <Grid>
+            <TextField label="End Date"
+              fullWidth
+              sx={{ width: 300, m: 1 }}
+              name="EndDate"
+              type="date"
+              inputProps={{
+                max: new Date().toISOString().split('T')[0] // Restricts to today's date
+              }}
+              value={enddate}
+              InputLabelProps={{ shrink: true }}
+              onChange={
+                (e) => {
+                  const newValue = e.target.value;
+                  //console.log("New date value:", newValue); // Fixed: log the actual new value
+                  if (newValue) {
+                    setEndDate(newValue);
+                  }
+
+                  else {
+                    setEndDate('');
+                  }
+
+                }
+              }
+            />
+          </Grid>
+
+        </Grid>
+
+
+        <Grid sx={{ marginLeft: "1vw", marginBottom: "1vh" }}>
+          <Button ref={buttonRef} onClick={handleClick} variant="contained" color="primary" sx={{ padding: '10px 20px' }} >Add an order</Button>
+        </Grid>
+
+
+
+      </Grid> // maingrid
+
+
+
+
+
+
+
       <Dialog
         open={isDialogueValid}
         onClose={onClose}
@@ -814,105 +1166,9 @@ const MyApp = () => {
         </Grid>
 
       </Dialog>
-      <Grid>
-        <FormControl sx={{ m: 1, width: 300 }}>
-          <InputLabel id="multi-select-checkbox-label">Organizations</InputLabel>
-          <Select
-            labelId="multi-select-checkbox-label"
-            id="multi-select-checkbox"
-            multiple
-            value={organizationSelectorList}
-            onChange={handleOrgOptions}
-            input={<OutlinedInput label="Organizations" />}
-            renderValue={(selected) =>
-              selected.join(",")
-            }
-            MenuProps={OrgMenuProps}
-          >
-            {orgDetail.map((value) => (
-              <MenuItem key={value} value={value}>
-                <Checkbox checked={organizationSelectorList.includes(value)} />
-                <ListItemText primary={value} />
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
 
-        <Grid>
-          <FormControl sx={{ m: 1, width: 300 }}>
-            <InputLabel id="risk-options-label">Risks</InputLabel>
-            <Select
-              multiple
-              value={riskSelectorList}
-              id="Risk-options-list"
-              labelId="risk-options-label"
-              onChange={handleChangeRiskSelector}
-              renderValue={(items) => items.join(',')}
-              MenuProps={RiskMenuProps}
-              input={<OutlinedInput label="Risks" />}
-            >
-              {
-                RiskDetail.map((value) => (
-                  <MenuItem value={value} key={value}>
-                    <ListItemText primary={value} />
-                    <Checkbox checked={riskSelectorList.includes(value)} />
-                  </MenuItem>
-                ))
-              }
-            </Select>
-          </FormControl>
-        </Grid>
-
-        <Grid>
-          <FormControl sx={{ width: 300, m: 1 }}>
-            <InputLabel id="Status-list">Status</InputLabel>
-            <Select
-              multiple
-              id="Status-Selector"
-              labelId="Status-list"
-              value={statusSelectorList}
-              onChange={handleStatusChanges}
-              renderValue={(items) => items.join(',')}
-              input={<OutlinedInput label="Status" />}
-              MenuProps={StatusMenuProps}>
-              {
-                statusOptions.map((item) => (
-                  <MenuItem key={item} value={item}>
-                    <ListItemText primary={item} />
-                    <Checkbox checked={statusSelectorList.includes(item)} />
-                  </MenuItem>
-                ))}
-            </Select>
-          </FormControl>
-        </Grid>
-
-
-        <Grid>
-          <TextField
-            sx={{ width: 300 }}
-            label="Search for an Id"
-            value={regexPattern}
-            onChange={(e) => {
-              if (e.target.value) {
-                setRegexPattern(e.target.value);
-              }
-
-              else {
-                setRegexPattern("");
-              }
-            }}
-
-          />
-
-
-        </Grid>
-
-
-
-
-      </Grid>
       <div style={{ height: "100vh", width: "100vw" }} className="ag-theme-alpine">
-      {/* //<AgGridReact rowData={agGridTableValues} columnDefs={fields} masterDetail={true} agDetailCellRenderer={displayMap} /> /*/ } 
+        {/* //<AgGridReact rowData={agGridTableValues} columnDefs={fields} masterDetail={true} agDetailCellRenderer={displayMap} /> /*/}
 
         {/*
         <AgGridReact
@@ -922,45 +1178,56 @@ const MyApp = () => {
           detailCellRenderer={DisplayMap}   // <-- Custom component
           detailCellRendererParams={{}}     // <-- Add this to stop AG Grid from expecting detailGridOptions
         />  */}
-       
-        <AgGridReact 
-  rowData={agGridTableValues} 
-  columnDefs={fields} 
-  masterDetail={true}
-  detailCellRenderer={displayMap}
-/>
+
+
+        {/*
+        <AgGridReact
+          rowData={agGridTableValues}
+          columnDefs={fields}
+          masterDetail={true}
+          detailCellRenderer={<GoogleMapComponent latitude={38.8971} longitude={-77.0365} />}
+        />
+      </div>*/}
+
+          <AgGridReact
+          rowData={agGridTableValues}
+          columnDefs={fields}
+          masterDetail={true}
+          detailCellRenderer={GoogleMapComponent}
+          detailCellRendererParams={{
+            latitude: 38.8971,
+            longitude: -77.0365,
+          }}
+        />
+
+
+
+        {/**/} <GoogleMapComponent latitude={38.8971} longitude={-77.0365} />
+
+        {/*
+      <Grid>
+        <p>Testing Map Render</p>
+        <div style={{ padding: "10px", border: "2px solid black", width: "100vw", height: "600px" }}>
+          <GoogleMapComponent latitude={40.6892} longitude={-74.0445} />
+        </div>
+
+      </Grid> */}
+
       </div>
-    </>
-  )
+      </>)
 }
 
 
 
 
-/*
-  const UIValidRiskScoreCheck=(value)=>
-   {
-      let choice=value.toLowerCase();
-    if(choice==='lr' || choice==='mr' || choice==='hr' || choice==='nr')
-    {
-      setValidRiskScore({ 'validated': true, 'error': false });
-      }
-
-    else
-    {
-      setValidRiskScore({ 'validated': true, 'error': true });
-      }
- 
-   } */
-/* RENDER METHODS */
-function getInitialState() {
+      function getInitialState() {
   var ans = {};
-  $('.initialState dt').each(function () {
+      $('.initialState dt').each(function () {
     var key = $(this).parent().attr("id");
-    var subKey = $(this).text();
-    var subVal = $(this).next().text();
-    if (_.isUndefined(key)) {
-      ans[subKey] = subVal;
+      var subKey = $(this).text();
+      var subVal = $(this).next().text();
+      if (_.isUndefined(key)) {
+        ans[subKey] = subVal;
     } else {
       if (!(key in ans)) {
         ans[key] = {};
@@ -968,18 +1235,18 @@ function getInitialState() {
       ans[key][subKey] = subVal;
     }
   });
-  return ans;
+      return ans;
 }
 
-function renderClass(tagName, props, classDef) {
+      function renderClass(tagName, props, classDef) {
   var initialState = getInitialState();
-  if (props) {
-    initialState = $.extend(initialState, props);
+      if (props) {
+        initialState = $.extend(initialState, props);
   }
 
-  ReactDOM.render(React.createElement(classDef, initialState), document.querySelector(tagName));
+      ReactDOM.render(React.createElement(classDef, initialState), document.querySelector(tagName));
 }
 
-$(function () {
-  renderClass("dashboard", null, MyApp);
-})//type your code her
+      $(function () {
+        renderClass("dashboard", null, MyApp);
+})
