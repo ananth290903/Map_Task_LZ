@@ -1,4 +1,4 @@
-// Last Modified: 2025-09-17T13:39:12.121Z
+// Last Modified: 2025-09-18T02:42:00.917Z
 import ReactDOM from 'react-dom';
 import React, { useState, useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
@@ -164,6 +164,9 @@ const MyApp = () => {
   const [displayRecord, setDisplayRecord] = React.useState([]);
   const [tableValues, setTableValues] = React.useState([]);
   const [riskoptions, setRiskOptions] = React.useState("");
+  const [coordinateRecord, setCoordinateRecord] = React.useState([]);
+
+
   React.useEffect(() => {
     if (!isValidDate.error && isValidDate.validated && isValidOrganization.validated && !isValidOrganization.error && isValidShippmentId.validated && !isValidShippmentId.error && !isValidLattitude.error && isValidLattitude.validated && !isValidLongitude.error && isValidLongitude.validated && isValidStatus.validated && !isValidStatus.error && isValidRiskScore.validated && !isValidRiskScore.error) {
       setIsButtonValid(true);
@@ -556,7 +559,17 @@ const MyApp = () => {
         console.log(fullRecords);
         setDisplayRecord(tablerecords);
         //console.log(tablerecords);
-        let mr = r.map((item) => ({ "shipmentId": shipmentId, "lattitude": item.lattitude, "longitude": item.longitude }));
+        //let mr = r.map((item) => ({ "shipmentId": item.shipmentId, "lattitude": item.lattitude, "longitude": item.longitude }));
+        //setCoordinateRecord()
+        let mr = r.reduce((acc, item) => {
+          acc[item.shipmentId] = {
+            latitude: item.lattitude,   // keep consistent spelling!
+            longitude: item.longitude
+          };
+          return acc;
+        }, {});
+
+        console.log("the map records", mr);
         setMapRecords(mr);
       },
       fail: () => { console.log("Error"); }
@@ -761,7 +774,7 @@ const MyApp = () => {
   }   */}
 
 
-  return(
+  return (
     <>
       <Grid sx={{ marginLeft: "37vw" }}>
         <h1>Shipment Tracking</h1>
@@ -1167,7 +1180,7 @@ const MyApp = () => {
 
       </Dialog>
 
-      <div style={{ height: "100vh", width: "100vw" }} className="ag-theme-alpine">
+      <div style={{ height: "100vh", width: "100vw"}} className="ag-theme-alpine">
         {/* //<AgGridReact rowData={agGridTableValues} columnDefs={fields} masterDetail={true} agDetailCellRenderer={displayMap} /> /*/}
 
         {/*
@@ -1189,7 +1202,8 @@ const MyApp = () => {
         />
       </div>*/}
 
-          <AgGridReact
+        {/* 
+               <AgGridReact
           rowData={agGridTableValues}
           columnDefs={fields}
           masterDetail={true}
@@ -1199,10 +1213,42 @@ const MyApp = () => {
             longitude: -77.0365,
           }}
         />
+         
+           detailCellRendererParams={(params)=>({
+            latitude:maprecords[params.data.shipmentId].latitude,
+            longitude:maprecords[params.data.shipmentId].longitude
+          })}
+
+         */}
+
+        <AgGridReact
+          rowData={agGridTableValues}
+          columnDefs={fields}
+          masterDetail={true}
+          detailCellRenderer={GoogleMapComponent}
+          detailCellRendererParams={(params) => {
+            const record = maprecords[params.data.shipmentId];
+            if (!record) {
+              console.warn(`No map record found for shipmentId: ${params.data.shipmentId}`);
+              return { latitude: 0, longitude: 0 };
+            }
+            console.log("ShipmentID", params.data.shipmentId);
+            console.log("Lattitute", record.lattitude);
+            console.log("Longitude", record.longitude);
+            return {
+              latitude: record.latitude,
+              longitude: record.longitude
+            };
+          }}
+        />
 
 
 
-        {/**/} <GoogleMapComponent latitude={38.8971} longitude={-77.0365} />
+
+
+
+
+        {/* <GoogleMapComponent latitude={38.8971} longitude={-77.0365} />  */} 
 
         {/*
       <Grid>
@@ -1214,20 +1260,20 @@ const MyApp = () => {
       </Grid> */}
 
       </div>
-      </>)
+    </>)
 }
 
 
 
 
-      function getInitialState() {
+function getInitialState() {
   var ans = {};
-      $('.initialState dt').each(function () {
+  $('.initialState dt').each(function () {
     var key = $(this).parent().attr("id");
-      var subKey = $(this).text();
-      var subVal = $(this).next().text();
-      if (_.isUndefined(key)) {
-        ans[subKey] = subVal;
+    var subKey = $(this).text();
+    var subVal = $(this).next().text();
+    if (_.isUndefined(key)) {
+      ans[subKey] = subVal;
     } else {
       if (!(key in ans)) {
         ans[key] = {};
@@ -1235,18 +1281,18 @@ const MyApp = () => {
       ans[key][subKey] = subVal;
     }
   });
-      return ans;
+  return ans;
 }
 
-      function renderClass(tagName, props, classDef) {
+function renderClass(tagName, props, classDef) {
   var initialState = getInitialState();
-      if (props) {
-        initialState = $.extend(initialState, props);
+  if (props) {
+    initialState = $.extend(initialState, props);
   }
 
-      ReactDOM.render(React.createElement(classDef, initialState), document.querySelector(tagName));
+  ReactDOM.render(React.createElement(classDef, initialState), document.querySelector(tagName));
 }
 
-      $(function () {
-        renderClass("dashboard", null, MyApp);
+$(function () {
+  renderClass("dashboard", null, MyApp);
 })
